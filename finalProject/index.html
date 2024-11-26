@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://use.typekit.net/lcn3jpe.css">
+  <link rel="stylesheet" href="https://use.typekit.net/iag7mud.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function(d) {
+      var config = {
+        kitId: 'dpe3xfp',
+        scriptTimeout: 3000,
+        async: true
+      },
+      h=d.documentElement,t=setTimeout(function(){h.className=h.className.replace(/\bwf-loading\b/g,"")+" wf-inactive";},config.scriptTimeout),tk=d.createElement("script"),f=false,s=d.getElementsByTagName("script")[0],a;h.className+=" wf-loading";tk.src='https://use.typekit.net/'+config.kitId+'.js';tk.async=true;tk.onload=tk.onreadystatechange=function(){a=this.readyState;if(f||a&&a!="complete"&&a!="loaded")return;f=true;clearTimeout(t);try{Typekit.load(config)}catch(e){}};s.parentNode.insertBefore(tk,s)
+    })(document);
+  </script>
+  
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="main.js"></script>
+  
+
+  <title>MajorStudio</title>
+</head>
+<body>
+  <h1>Mint Matters</h1>
+  <section id="intro">
+    <h2>Stamp collections and their estimated values</h2>
+    <div id="introImages">
+    <img src="assets/introImage.jpg">
+       
+    </div>
+    <h3>Stamps are more than just pieces of paper; they often commemorate important historical events, figures, or milestones. For collectors, owning a stamp is like owning a piece of history.<br><br>
+        The staggering valuations of certain stamps, can seem absurd. But how are these figures determined? It’s a combination of rarity, condition, historical significance, and original price that drives its worth. Each stamp's story, including its rarity due to printing errors or limited releases, plays a significant role in its eventual price. </h3>
+    
+    </section>
+
+    <section id="radarZone">
+        <div id="radarImages">
+            <div class="row">
+                <div class="row align-items-center">
+                <div class="col-md-5">
+                  <img src="https://ids.si.edu/ids/deliveryService?id=NPM-1998_2005_15_2" width="300" height="300">
+                </div>
+                <div class="col-md-7">
+                  <section id="radarChart"></section>
+                </div>
+                </div>
+              </div>
+              </div>
+              </div>
+            </div>
+         </div>
+        
+     </section>
+
+   
+    <section id="barZone">
+      <h3 style="color: black; width: 70%;"> Let’s take a closer look at how these factors come together to estimate the market value of  the Smithsonian’s collection of  1412 CC0 postage stamps. </h3>
+      <section id="barChart"></section>
+      
+      <div id="modal" style="display: none;">
+        <div id="modal-content">
+            <img id="modal-image">
+            <div class="modal-text">
+                
+                <h2 id="modal-image-container" class = "modal-name"> </h2>
+                <h5 id="modal-radar"></h5>
+                <h5 id="modal-image"></h5>
+                <h5 id="modal-name"></h5>
+                <h5 id="modal-desc"></h5>
+            </div>
+            <span id="close-modal">&times;</span>
+        </div>
+    </div>
+
+       
+        
+      </section>
+
+     <section id="parallelZone">
+      <h3> Let’s drill down on these individual factors. You can drag the corners of the bars to adjust each filter. The left shows the lowest values for each category, while the right shows the highest values</h3>
+      <section id="ParallelChart"></section>
+        <h3> These are all the stamps that fall in the following criteria:<br>
+            Original price: x and y<br>
+            Rareness: x and y<br>
+            Vibrancy: x and y<br>
+            Condition: x and y<br>
+            Single/sheet: x and y</h3>
+    </section>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
