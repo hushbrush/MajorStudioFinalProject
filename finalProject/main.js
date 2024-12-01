@@ -1,7 +1,7 @@
 
 
 
-let primaryColour = "#f0ead6", secondaryColour = "#FFF", tertiaryColour = "#fff", bandColor= "#000";
+let primaryColour = "#f0ead6", secondaryColour = "#FFF", tertiaryColour = "#fff", bandColor= "#000", dimColour="#b3b3b3", highlightColour="#fff";
 
 
 let i, cleanedData, indexedData=[], bucketedData=[]; 
@@ -179,6 +179,11 @@ async function runCode() {
 runCode();
 
 
+const state = {
+    currentState: "initial",
+    isModalOpen: false,
+    // Add more state properties here if needed
+};
 
 function createStampIndex(stamp) {
     let index = 0;
@@ -630,8 +635,6 @@ function createBucketChart(data) {
 
 
 function createParallelChart(data) {
-   
-
     var margin = { top: 50, right: 20, bottom: 20, left: 0 };
     var width = 1000 - margin.left - margin.right;
     var height = 3500 - margin.top - margin.bottom;
@@ -641,8 +644,7 @@ function createParallelChart(data) {
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
-            .attr("transform", `translate(${margin.left}, ${margin.top})`);   
-        
+        .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
     const dimensions = Object.keys(data[0].allIndices);
 
@@ -656,13 +658,12 @@ function createParallelChart(data) {
 
     const yScale = d3.scalePoint()
         .domain(dimensions)
-        .range([0, height])
-       
+        .range([0, height]);
 
     // Global state to track selected ranges
     const selectedRanges = {};
 
-    // Function to filter and update lines based on brushes
+    // Function to filter and update lines based on sliders
     function updateLines() {
         const filteredData = data.filter(d => {
             return dimensions.every(dim => {
@@ -695,7 +696,7 @@ function createParallelChart(data) {
             );
     }
 
-    // Add axes with brushes for each dimension
+    // Add axes with sliders for each dimension
     dimensions.forEach(dim => {
         const axisGroup = svg.append("g")
             .attr("class", "axis")
@@ -708,49 +709,58 @@ function createParallelChart(data) {
             .attr("class", "axis-label")
             .attr("x", width - 30)
             .attr("y", -30)
-            .style("text-anchor", "center")  
+            .style("text-anchor", "center")
             .style("fill", tertiaryColour)
             .style("font-size", "16px")
             .style("font-weight", "bold")
             .style("font-family", "meursault-variable, serif")
             .style("font-size", "24px")
             .style("font-weight", "400")
-            .text(dim); // Set the text for the inner div
-            // Add brush   selectedRanges[dim] = [xScales[dim].domain()[0], xScales[dim].domain()[1]];
-        var nonfilterColour = "gray";
-        axisGroup.append("g")
-            .attr("class", "brush")
-            .call(d3.brushX()
-                .extent([[0, -10], [width, 30]]) // Brush area
-                .on("start brush end", function (event) {
-                    const selection = event.selection;
-                    if (selection) {
-                        const [min, max] = selection.map(xScales[dim].invert); // Get range
-                        selectedRanges[dim] = [min, max];
-                        d3.select(this).select(".selection")
-                            .style("fill", bandColor)
-                        
-                        nonfilterColour = "gray";
+            .text(dim);
 
-                    } else {
-                        delete selectedRanges[dim]; // Clear filter
-                    }
-                    updateLines();
-                })
-            )
-            // .selectAll(".overlay") // Select the brush overlay
-            
-            .attr("class", "selection")
-            .attr("cursor", "move")
-            .attr("fill-opacity", "1")
-            .style("stroke", secondaryColour)
-            .attr("shape-rendering", "crispEdges")
-            .attr("x", 0)
-            .attr("y", -10)
-            .attr("width", width)
-            .attr("height", 30)
-            .style("fill", primaryColour)
+        // Add slider group
+        const sliderGroup = axisGroup.append("g")
+            .attr("class", "slider")
+            .attr("transform", `translate(0, 10)`);
 
+        // Draw the slider line
+        const sliderLine = sliderGroup.append("line")
+            .attr("x1", 0)
+            .attr("x2", width)
+            .attr("stroke", "gray")
+            .attr("stroke-width", 2);
+
+        // Add draggable handles
+        const handleLeft = sliderGroup.append("circle")
+            .attr("cx", 0)
+            .attr("cy", 0)
+            .attr("r", 6)
+            .attr("fill", secondaryColour)
+            .attr("cursor", "ew-resize")
+            .call(d3.drag()
+                .on("drag", function (event) {
+                    const newX = Math.max(0, Math.min(width, event.x)); // Clamp within range
+                    d3.select(this).attr("cx", newX);
+                    selectedRanges[dim][0] = xScales[dim].invert(newX); // Update range
+                    updateLines(); // Update visualization
+                }));
+
+        const handleRight = sliderGroup.append("circle")
+            .attr("cx", width)
+            .attr("cy", 0)
+            .attr("r", 6)
+            .attr("fill", secondaryColour)
+            .attr("cursor", "ew-resize")
+            .call(d3.drag()
+                .on("drag", function (event) {
+                    const newX = Math.max(0, Math.min(width, event.x)); // Clamp within range
+                    d3.select(this).attr("cx", newX);
+                    selectedRanges[dim][1] = xScales[dim].invert(newX); // Update range
+                    updateLines(); // Update visualization
+                }));
+
+        // Initialize selected ranges
+        selectedRanges[dim] = [xScales[dim].domain()[0], xScales[dim].domain()[1]];
     });
 
     // Initial draw of all lines
@@ -759,11 +769,6 @@ function createParallelChart(data) {
 
 
 
-const state = {
-    currentState: "initial",
-    isModalOpen: false,
-    // Add more state properties here if needed
-};
 
 // Function to handle line click event
 function handleLineClick(data) {
