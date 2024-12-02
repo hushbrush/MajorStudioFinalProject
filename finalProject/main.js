@@ -6,11 +6,7 @@ import namesPlugin from 'colord/plugins/names';
 // Enable CSS color names support
 extend([namesPlugin]);
 
-// Example usage of colord
-console.log(colord('red').toHex());  // Should output the hex value #ff0000 for 'red'
-
-
-let primaryColour = "#f0ead6", secondaryColour = "#FFF", tertiaryColour = "#fff", bandColor= "#000", dimColour="#b3b3b3", highlightColour="#fff", tickTextColour= "#d1d1d1";
+let primaryColour = "#f0ead6", secondaryColour = "#FFF", tertiaryColour = "#fff", bandColor= "#000", dimColour="#b3b3b3", highlightColour="#fff", tickTextColour= "#d1d1d1", blackColour= "#000";
 
 
 let i, cleanedData, indexedData=[], bucketedData=[]; 
@@ -185,7 +181,7 @@ async function runCode() {
 
         
     }
-
+    
     createRadarChart(bucketedData[2].allIndices)
     createBucketChart(bucketedData);
     createParallelChart(bucketedData);
@@ -491,9 +487,10 @@ function classifyStampByBucket(data) {
 
 
 function createRadarChart(data) {
+    
     var margin = {top: 100, right: 100, bottom: 100, left: 100},
-    width = 300;
-    height = 300;
+     width = 300;
+    let height = 300;
 
     const svg = d3.select("#radarChart")
         .append("svg")
@@ -584,20 +581,18 @@ function createRadarChart(data) {
 }
 
 
-function createBucketChart(data) {
-    
-    var margin = {top: 10, right: 30, bottom: 30, left: 60},
-    width = 1000 - margin.left - margin.right,
-    height = 700 - margin.top - margin.bottom;
-    
 
-    const svg=d3.select("#barChart")
+function createBucketChart(data) {
+    var margin = { top: 10, right: 30, bottom: 30, left: 60 },
+        width = 1000 - margin.left - margin.right,
+        height = 700 - margin.top - margin.bottom;
+
+    const svg = d3.select("#barChart")
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
-            .attr("transform",
-                "translate(" + margin.left + "," + margin.top + ")");
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     // Add X axis
     var x = d3.scaleBand()
@@ -612,8 +607,10 @@ function createBucketChart(data) {
     var y = d3.scaleLinear()
         .domain([0, 250])
         .range([height, 0]);
-    svg.append("g")
-        .call(d3.axisLeft(y));
+    svg.append("g").call(d3.axisLeft(y));
+
+    // Create the tooltip
+    const tooltip = createTooltip("#barChart");
 
     // Add lines
     svg.selectAll("line")
@@ -622,16 +619,74 @@ function createBucketChart(data) {
         .append("line")
         .attr("x1", function (d) { return x(d.bucket); })
         .attr("y1", function (d) { return y(d.orgPrice); })
-        .attr("x2", function (d, i) { return x(d.bucket) + x.bandwidth(); })
+        .attr("x2", function (d) { return x(d.bucket) + x.bandwidth(); })
         .attr("y2", function (d) { return y(d.orgPrice); })
-        .on("click", function(d) {
-            handleLineClick(d);
+        .on("mouseover", function (event, d) {
+            if (d.link) {
+                tooltip.show(event, d); // Show tooltip with images
+            }
         })
-        .style("stroke", bandColor)
-        .attr("stroke-width", 2)
-        .attr("opacity", 0.2);     
-
+        .on("mousemove", function (event) {
+            // Update tooltip position as mouse moves
+            tooltip.updatePosition(event);
+        })
+        .on("mouseout", function () {
+            tooltip.hide(); // Hide tooltip
+        })
+        .style("stroke", function (d) {
+            let colour;
+            if (d.color && d.color !== null) {
+                colour = normalizeColor(d.color); // Normalize the color
+            } else {
+                colour = "#000"; // Default to black if no color is available
+            }
+            return colour;
+        })
+        .attr("stroke-width", 1)
+        .attr("opacity", 0.4);
 }
+
+
+
+function createTooltip(containerId) {
+    // Create a tooltip container
+    const tooltip = d3.select(containerId)
+        .append("div")
+        .attr("class", "tooltip")
+        .style("position", "absolute")
+        .style("background", "white")
+        .style("border", "1px solid #ccc")
+        .style("padding", "10px")
+        .style("display", "none")
+        .style("pointer-events", "none");
+
+    return {
+        show: (event, data) => {
+            // Populate tooltip with images
+            const content = Array.isArray(data.link) 
+                ? data.link.map(link => `<img src="${link}" style="width: 50px; height: 50px; margin: 5px;">`).join("")
+                : data.link ? `<img src="${data.link}" style="width: 50px; height: 50px;">` 
+                : "No images available";
+
+            tooltip
+                .html(content)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY + 10) + "px")
+                .style("display", "block");
+        },
+        updatePosition: (event) => {
+            // Update tooltip position
+            tooltip
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY + 10) + "px");
+        },
+        hide: () => {
+            tooltip.style("display", "none");
+        }
+    };
+}
+
+
 
 // Function to handle line click event
 function handleLineClick(data) {
@@ -767,7 +822,7 @@ function createParallelChart(data) {
                         return d3.line()(path);
                     })
                     .style("fill", "none")
-                    .style("stroke", secondaryColour)
+                    .style("stroke", (d) => d.color)
                     .style("opacity", 0.1)
                     .style("stroke-width", 0.5),
                 update => update, // Update unchanged
@@ -964,22 +1019,35 @@ function capitalizeFirstLetter(string) {
 
 function normalizeColor(inputColor) {
 
-//     colord("#ff0000").grayscale().toRgbString();
-// colord("rgb(192, 192, 192)").isLight();
+    if (inputColor.includes('multi;')) {
+        return null; // Return null if the input contains 'multi;'
+    }
 
+    const parsedColor = colord(inputColor);
 
-console.log(colord("hsl(0, 50%, 50%)").darken(0.25).toHex())
-    // Try parsing the color
-    // const parsedColor = colord(inputColor);
-    // console.log(parsedColor)
+    if (parsedColor.isValid()) {
+        const { r, g, b } = parsedColor.toRgb();
 
-    // if (parsedColor.isValid()) {
-    //     return parsedColor.toHex(); // Convert to HEX for consistency
-    // }
+        // Check if r, g, and b are all zero (black color)
+        if (r === 0 && g === 0 && b === 0) {
+            return null; // Return null if RGB is zero
+        }
 
-    // else {
-    //     console.log("didn't work")
-    // }
+        // Define a threshold for how "close to black" the color can be
+        const threshold = 30; // RGB values below this will be considered close to black
 
+        // If the color is very close to black, lighten it a little
+        if (r < threshold && g < threshold && b < threshold) {
+            return parsedColor.lighten(0.2).toHex(); // Lighten by 20% (adjust as needed)
+        }
+
+        return parsedColor.toHex(); // Convert to HEX for consistency
+    } else {
+        console.log("Invalid color input");
+        return null; // Return null for invalid color input
+    }
 }
+
+
+
 
