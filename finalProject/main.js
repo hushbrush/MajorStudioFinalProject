@@ -1,7 +1,7 @@
 
 
 
-let primaryColour = "#f0ead6", secondaryColour = "#FFF", tertiaryColour = "#fff", bandColor= "#000", dimColour="#b3b3b3", highlightColour="#fff";
+let primaryColour = "#f0ead6", secondaryColour = "#FFF", tertiaryColour = "#fff", bandColor= "#000", dimColour="#b3b3b3", highlightColour="#fff", tickTextColour= "#d1d1d1";
 
 
 let i, cleanedData, indexedData=[], bucketedData=[]; 
@@ -179,11 +179,7 @@ async function runCode() {
 runCode();
 
 
-const state = {
-    currentState: "initial",
-    isModalOpen: false,
-    // Add more state properties here if needed
-};
+
 
 function createStampIndex(stamp) {
     let index = 0;
@@ -632,144 +628,6 @@ function createBucketChart(data) {
 
 }
 
-
-
-function createParallelChart(data) {
-    var margin = { top: 50, right: 20, bottom: 20, left: 0 };
-    var width = 1000 - margin.left - margin.right;
-    var height = 3500 - margin.top - margin.bottom;
-
-    const svg = d3.select("#ParallelChart")
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", `translate(${margin.left}, ${margin.top})`);
-
-    const dimensions = Object.keys(data[0].allIndices);
-
-    // Create scales for each dimension
-    const xScales = {};
-    dimensions.forEach(dim => {
-        xScales[dim] = d3.scaleLinear()
-            .domain(d3.extent(data, d => d.allIndices[dim] || 0)) // Ensure valid domains
-            .range([0, width]);
-    });
-
-    const yScale = d3.scalePoint()
-        .domain(dimensions)
-        .range([0, height]);
-
-    // Global state to track selected ranges
-    const selectedRanges = {};
-
-    // Function to filter and update lines based on sliders
-    function updateLines() {
-        const filteredData = data.filter(d => {
-            return dimensions.every(dim => {
-                const range = selectedRanges[dim];
-                const value = d.allIndices[dim];
-                return !range || (value >= range[0] && value <= range[1]);
-            });
-        });
-
-        svg.selectAll(".line")
-            .data(filteredData, d => d.id) // Use a unique identifier if available
-            .join(
-                enter => enter.append("path")
-                    .attr("class", "line")
-                    .attr("d", d => {
-                        const path = dimensions.map(dim => {
-                            const value = d.allIndices[dim];
-                            return value !== undefined && !isNaN(value)
-                                ? [xScales[dim](value), yScale(dim)]
-                                : null;
-                        }).filter(p => p !== null); // Remove null points
-                        return d3.line()(path);
-                    })
-                    .style("fill", "none")
-                    .style("stroke", secondaryColour)
-                    .style("opacity", 0.1)
-                    .style("stroke-width", 0.5),
-                update => update, // Update unchanged
-                exit => exit.remove() // Remove lines no longer matching filter
-            );
-    }
-
-    // Add axes with sliders for each dimension
-    dimensions.forEach(dim => {
-        const axisGroup = svg.append("g")
-            .attr("class", "axis")
-            .attr("transform", `translate(0, ${yScale(dim)})`);
-
-        axisGroup.call(d3.axisBottom(xScales[dim]));
-
-        // Add axis label
-        axisGroup.append("text")
-            .attr("class", "axis-label")
-            .attr("x", width - 30)
-            .attr("y", -30)
-            .style("text-anchor", "center")
-            .style("fill", tertiaryColour)
-            .style("font-size", "16px")
-            .style("font-weight", "bold")
-            .style("font-family", "meursault-variable, serif")
-            .style("font-size", "24px")
-            .style("font-weight", "400")
-            .text(dim);
-
-        // Add slider group
-        const sliderGroup = axisGroup.append("g")
-            .attr("class", "slider")
-            .attr("transform", `translate(0, 10)`);
-
-        // Draw the slider line
-        const sliderLine = sliderGroup.append("line")
-            .attr("x1", 0)
-            .attr("x2", width)
-            .attr("stroke", "gray")
-            .attr("stroke-width", 2);
-
-        // Add draggable handles
-        const handleLeft = sliderGroup.append("circle")
-            .attr("cx", 0)
-            .attr("cy", 0)
-            .attr("r", 6)
-            .attr("fill", secondaryColour)
-            .attr("cursor", "ew-resize")
-            .call(d3.drag()
-                .on("drag", function (event) {
-                    const newX = Math.max(0, Math.min(width, event.x)); // Clamp within range
-                    d3.select(this).attr("cx", newX);
-                    selectedRanges[dim][0] = xScales[dim].invert(newX); // Update range
-                    updateLines(); // Update visualization
-                }));
-
-        const handleRight = sliderGroup.append("circle")
-            .attr("cx", width)
-            .attr("cy", 0)
-            .attr("r", 6)
-            .attr("fill", secondaryColour)
-            .attr("cursor", "ew-resize")
-            .call(d3.drag()
-                .on("drag", function (event) {
-                    const newX = Math.max(0, Math.min(width, event.x)); // Clamp within range
-                    d3.select(this).attr("cx", newX);
-                    selectedRanges[dim][1] = xScales[dim].invert(newX); // Update range
-                    updateLines(); // Update visualization
-                }));
-
-        // Initialize selected ranges
-        selectedRanges[dim] = [xScales[dim].domain()[0], xScales[dim].domain()[1]];
-    });
-
-    // Initial draw of all lines
-    updateLines();
-}
-
-
-
-
 // Function to handle line click event
 function handleLineClick(data) {
     console.log("Line clicked:", data);
@@ -831,6 +689,8 @@ function handleLineClick(data) {
         .html(`<a href="${data.link}" target="_blank">☞ More Info</a>`);
 }
 
+
+
 d3.select("#close-modal").on("click", function() {
     d3.select("#modal").style("display", "none");
 });
@@ -840,6 +700,260 @@ d3.select("#modal").on("click", function(event) {
         d3.select("#modal").style("display", "none");
     }
 });
+
+
+function createParallelChart(data) {
+    var margin = { top: 50, right: 20, bottom: 20, left: 0 };
+    var width = 1000 - margin.left - margin.right;
+    var height = 3500 - margin.top - margin.bottom;
+
+    const svg = d3.select("#ParallelChart")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+    const dimensions = Object.keys(data[0].allIndices);
+
+    // Create scales for each dimension
+    const xScales = {};
+    dimensions.forEach(dim => {
+        xScales[dim] = d3.scaleLinear()
+            .domain(d3.extent(data, d => d.allIndices[dim] || 0)) // Ensure valid domains
+            .range([0, width]);
+    });
+
+    const yScale = d3.scalePoint()
+        .domain(dimensions)
+        .range([0, height]);
+
+    // Global state to track selected ranges
+    const selectedRanges = {
+        priceRange: [0, 100],
+        rarenessRange: [0, 100],
+        vibrancyRange: [0, 100],
+        conditionRange: [0, 100],
+        typeRange: [0, 100]
+    };
+
+    // Function to filter and update lines based on sliders
+    function updateLines() {
+        const filteredData = data.filter(d => {
+            return dimensions.every(dim => {
+                const range = selectedRanges[dim];
+                const value = d.allIndices[dim];
+                return !range || (value >= range[0] && value <= range[1]);
+            });
+        });
+
+        svg.selectAll(".line")
+            .data(filteredData, d => d.id) // Use a unique identifier if available
+            .join(
+                enter => enter.append("path")
+                    .attr("class", "line")
+                    .attr("d", d => {
+                        const path = dimensions.map(dim => {
+                            const value = d.allIndices[dim];
+                            return value !== undefined && !isNaN(value)
+                                ? [xScales[dim](value), yScale(dim)]
+                                : null;
+                        }).filter(p => p !== null); // Remove null points
+                        return d3.line()(path);
+                    })
+                    .style("fill", "none")
+                    .style("stroke", secondaryColour)
+                    .style("opacity", 0.1)
+                    .style("stroke-width", 0.5),
+                update => update, // Update unchanged
+                exit => exit.remove() // Remove lines no longer matching filter
+            );
+    }
+
+// Add invisible anchor for each dimension's slider
+dimensions.forEach(dim => {
+    const axisGroup = svg.append("g")
+        .attr("class", "axis")
+        .attr("transform", `translate(0, ${yScale(dim)})`);
+
+    // Create invisible anchor div for scrolling to this dimension's slider
+    const anchorDiv = d3.select("#ParallelChart").append("div")
+        .attr("id", `${dim}Anchor`)
+        .style("position", "absolute")
+        .style("top", `${yScale(dim)+3500}px`) // Position anchor at slider's y position
+        .style("left", "0")
+        .style("width", "1px")
+        .style("height", "1px")
+        .style("visibility", "hidden"); // Make it invisible
+
+    // Create axis and sliders (rest of the code remains unchanged)
+    axisGroup.call(d3.axisBottom(xScales[dim]))
+        .selectAll("text")
+        .style("fill", tickTextColour)
+        .style("font-size", "14px");
+
+    // Add axis label
+    axisGroup.append("text")
+        .attr("class", "axis-label")
+        .attr("x", width - 30)
+        .attr("y", -30)
+        .style("text-anchor", "center")
+        .style("fill", tickTextColour)
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .style("font-family", "meursault-variable, serif")
+        .text(dim);
+
+    // Add slider group
+    const sliderGroup = axisGroup.append("g")
+        .attr("class", "slider")
+        .attr("transform", `translate(0, 0)`);
+
+    
+        // Draw the slider line (initially fully selected)
+        const sliderLine = sliderGroup.append("line")
+            .attr("x1", 0)
+            .attr("x2", width)
+            .attr("stroke", primaryColour)
+            .attr("stroke-width", 2);
+
+        // Draw the unselected parts of the slider line
+        const leftSegment = sliderGroup.append("line")
+            .attr("x1", 0)
+            .attr("x2", 0) // Initially 0, updated dynamically
+            .attr("stroke", primaryColour)
+            .attr("stroke-opacity", 0.3)
+            .attr("stroke-width", 2);
+
+        const rightSegment = sliderGroup.append("line")
+            .attr("x1", width) // Initially matches the right edge
+            .attr("x2", width)
+            .attr("stroke", primaryColour)
+            .attr("stroke-opacity", 0.3)
+            .attr("stroke-width", 2);
+
+        // Add draggable handles
+        const handleLeft = sliderGroup.append("circle")
+            .attr("cx", 0)
+            .attr("cy", 0)
+            .attr("r", 10)
+            .attr("fill", secondaryColour)
+            .attr("cursor", "ew-resize")
+            .call(d3.drag()
+                .on("drag", function (event) {
+                    const newX = Math.max(0, Math.min(width, event.x)); // Clamp within range
+                    d3.select(this).attr("cx", newX);
+                    selectedRanges[dim][0] = xScales[dim].invert(newX); // Update range
+                    updateSliderSegments();
+                    updateLines(); // Update visualization
+                    updateTextBlock(selectedRanges); // Update the text block
+                }));
+
+        const handleRight = sliderGroup.append("circle")
+            .attr("cx", width)
+            .attr("cy", 0)
+            .attr("r", 10)
+            .attr("fill", secondaryColour)
+            .attr("cursor", "ew-resize")
+            .call(d3.drag()
+                .on("drag", function (event) {
+                    const newX = Math.max(0, Math.min(width, event.x)); // Clamp within range
+                    d3.select(this).attr("cx", newX);
+                    selectedRanges[dim][1] = xScales[dim].invert(newX); // Update range
+                    updateSliderSegments();
+                    updateLines(); // Update visualization
+                    updateTextBlock(selectedRanges); // Update the text block
+                }));
+
+        // Initialize selected ranges
+        selectedRanges[dim] = [xScales[dim].domain()[0], xScales[dim].domain()[1]];
+
+        // Function to update slider segments
+        function updateSliderSegments() {
+            const leftX = xScales[dim](selectedRanges[dim][0]);
+            const rightX = xScales[dim](selectedRanges[dim][1]);
+
+            // Update positions of unselected segments
+            leftSegment.attr("x2", leftX);
+            rightSegment.attr("x1", rightX).attr("x2", width);
+
+            // Update selected range segment
+            sliderLine.attr("x1", leftX).attr("x2", rightX);
+        }
+
+        // Add reset button
+        const resetButton = axisGroup.append("image")
+        .attr("x", width + 30)
+        .attr("y", -10) // Adjust y-position to align the image correctly
+        .attr("width", 100) // Set the width of the image
+        .attr("height", 100) // Set the height of the image
+        .attr("href", "assets/reset.png") // Path to the reset image
+        .style("cursor", "pointer")
+        .on("click", function () {
+            // Reset selected range
+            selectedRanges[dim] = [xScales[dim].domain()[0], xScales[dim].domain()[1]];
+    
+            // Reset slider handles
+            handleLeft.attr("cx", xScales[dim](selectedRanges[dim][0]));
+            handleRight.attr("cx", xScales[dim](selectedRanges[dim][1]));
+    
+            // Reset slider segments
+            updateSliderSegments();
+    
+            // Update visualization and text block
+            updateLines();
+            updateTextBlock(selectedRanges);
+        });
+    
+});
+
+
+  
+
+    // Initial draw of all lines
+    updateLines(selectedRanges);
+}
+
+// Function to update the text block with clickable links
+function updateTextBlock(selectedRanges) {
+    const textBlock = document.getElementById("textBlock");
+
+    let textContent = `
+        <h3> These are all the stamps that fall in the following criteria: <br>
+    `;
+
+    // Add each range dynamically to the textContent, with clickable links
+    Object.keys(selectedRanges).forEach(rangeKey => {
+        const range = selectedRanges[rangeKey];
+        const rangeName = capitalizeFirstLetter(rangeKey.replace('Range', ''));
+
+        // Create clickable link for each range
+        textContent += `
+            <a href="#${rangeKey.replace('Range', '')}Anchor" 
+               style="text-decoration: none; color: inherit;" 
+               onclick="scrollToAnchor('${rangeKey.replace('Range', '')}Anchor')">
+               ${rangeName}: ${Math.floor(range[0])} and ${Math.floor(range[1])}
+            </a> <br>`;
+    });
+
+    textContent += `</h3>`;
+
+    // Set the inner HTML of the text block
+    textBlock.innerHTML = textContent;
+}
+
+// Add smooth scrolling behavior
+function scrollToAnchor(anchorId) {
+    const target = document.getElementById(anchorId);
+    if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+}
+
+// Utility function to capitalize the first letter of a string
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 
 

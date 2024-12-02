@@ -135,3 +135,18 @@ row {
     margin: 0 auto;
     padding-bottom: 200px;
 }
+
+
+#textBlock {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%); /* Center it horizontally */
+    text-align: center; /* Align text in the center */
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.067); /* Optional: makes the text block stand out */
+    width: 100%; /* Optional: you can adjust the width as needed */
+    font-family: Arial, sans-serif;
+}
+html {
+    scroll-behavior: auto;
+}
