@@ -185,6 +185,7 @@ async function runCode() {
     createRadarChart(bucketedData[2].allIndices)
     createBucketChart(bucketedData);
     createParallelChart(bucketedData);
+    showImages(bucketedData);
 
     
 }
@@ -196,17 +197,50 @@ runCode();
 
 function createStampIndex(stamp) {
     let index = 0;
-
+    console.log(stamp);
     // Condition of the Stamp (Unused, Mint, etc.)(max 15)
     let conditionIndex = 0;
-    if (stamp.description && stamp.description.includes("unused")) {
-        conditionIndex = 25;
-    } else if (stamp.description && stamp.description.includes("mint")) {
-        conditionIndex = 50;
-    } else if (stamp.description && (stamp.description.includes("lightly used") || stamp.description.includes("slightly worn"))) {
-        conditionIndex = 5;
+
+if (stamp.description) {
+    const desc = stamp.description.toLowerCase();
+
+    // Unused and mint conditions
+    if (desc.includes("mint")) {
+        conditionIndex = 50; // Perfect condition
+    } else if (desc.includes("unused")) {
+        conditionIndex = 25; // Excellent but less than mint
     }
-    index += conditionIndex;
+
+    // Lightly used or slightly worn
+    if (desc.includes("lightly used") || desc.includes("slightly worn")) {
+        conditionIndex = 5; // Minimal wear
+    }
+
+    // Fancy cancels or other wear marks
+    if (desc.includes("fancy cancel")) {
+        conditionIndex = Math.max(conditionIndex, 10); // Recognizable wear with collectible value
+    }
+
+    // Handling stamps identified as "proofs" or "reprints"
+    if (desc.includes("proof") || desc.includes("reprint")) {
+        conditionIndex = Math.min(conditionIndex, 20); // Generally less desirable for postage, but may have collector value
+    }
+
+    // Other descriptors that might reflect physical state
+    if (desc.includes("perf 12") || desc.includes("perforation")) {
+        conditionIndex += 5; // Adjustment for clear perforations
+    }
+    if (desc.includes("card plate proof")) {
+        conditionIndex += 5; // Proofs printed on special materials
+    }
+
+    // Final adjustments based on detected condition
+    conditionIndex = Math.min(conditionIndex, 50); // Cap at 50
+}
+
+index += conditionIndex;
+
+   
 
     // Perforation Types (e.g., perf 12, Grill)
     let perforationIndex = 0;
@@ -808,26 +842,29 @@ function createParallelChart(data) {
         });
 
         svg.selectAll(".line")
-            .data(filteredData, d => d.id) // Use a unique identifier if available
-            .join(
-                enter => enter.append("path")
-                    .attr("class", "line")
-                    .attr("d", d => {
-                        const path = dimensions.map(dim => {
-                            const value = d.allIndices[dim];
-                            return value !== undefined && !isNaN(value)
-                                ? [xScales[dim](value), yScale(dim)]
-                                : null;
-                        }).filter(p => p !== null); // Remove null points
-                        return d3.line()(path);
-                    })
-                    .style("fill", "none")
-                    .style("stroke", (d) => d.color)
-                    .style("opacity", 0.1)
-                    .style("stroke-width", 0.5),
-                update => update, // Update unchanged
-                exit => exit.remove() // Remove lines no longer matching filter
-            );
+        .data(filteredData, d => d.id) // Use a unique identifier if available
+        .join(
+            enter => enter.append("path")
+                .attr("class", "line")
+                .attr("d", d => {
+                    // Calculate the path for each dimension
+                    const path = dimensions.map((dim, i) => {
+                        const value = d.allIndices[dim];
+                        const jitter = (Math.random() - 0.5) * 50; // Small random displacement
+                        return value !== undefined && !isNaN(value)
+                            ? [xScales[dim](value) + jitter, yScale(dim)]
+                            : null;
+                    }).filter(p => p !== null); // Remove null points
+                    return d3.line().curve(d3.curveLinear)(path); // Use curveLinear to make stroke ends rounded
+                })
+                .style("fill", "none")
+                .style("stroke", d => d.color)
+                .style("opacity", 1)
+                .style("stroke-width", 1),
+            update => update, // Update unchanged
+            exit => exit.remove() // Remove lines no longer matching filter
+        );
+    
     }
 
 // Add invisible anchor for each dimension's slider
@@ -968,9 +1005,6 @@ dimensions.forEach(dim => {
 });
 
 
-  
-
-    // Initial draw of all lines
     updateLines(selectedRanges);
 }
 
@@ -1002,19 +1036,39 @@ function updateTextBlock(selectedRanges) {
     textBlock.innerHTML = textContent;
 }
 
-// Add smooth scrolling behavior
-function scrollToAnchor(anchorId) {
-    const target = document.getElementById(anchorId);
-    if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "center" });
+
+function showImages(data) {
+    const imageContainer = document.getElementById("imageContainer");
+
+    // Efficiently clear previous images
+    while (imageContainer.firstChild) {
+        imageContainer.removeChild(imageContainer.firstChild);
     }
-}
 
-// Utility function to capitalize the first letter of a string
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
+    // Use a DocumentFragment for efficient rendering
+    const fragment = document.createDocumentFragment();
 
+    // Create and append image elements
+    data.forEach(d => {
+        const image = document.createElement("img");
+        image.src = d.thumbnail;
+        image.alt = d.title;
+        image.style.height = "200px"; // Set image height
+        fragment.appendChild(image);
+    });
+
+    // Append fragment to the container
+    imageContainer.appendChild(fragment);
+
+    // Apply grid layout to the container
+    Object.assign(imageContainer.style, {
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+        gridGap: "10px",
+        justifyItems: "center",
+        alignItems: "center"
+    });
+}
 
 
 function normalizeColor(inputColor) {
@@ -1048,6 +1102,14 @@ function normalizeColor(inputColor) {
     }
 }
 
-
-
-
+// Utility function to capitalize the first letter of a string
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+// Add smooth scrolling behavior
+function scrollToAnchor(anchorId) {
+    const target = document.getElementById(anchorId);
+    if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+}

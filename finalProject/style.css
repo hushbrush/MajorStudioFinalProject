@@ -137,15 +137,26 @@ row {
 }
 
 
-#textBlock {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%); /* Center it horizontally */
-    text-align: center; /* Align text in the center */
+ /* Style for the text block */
+ #textBlock {
+    position: relative; /* Use relative positioning instead of absolute */
+    margin: 20px auto; /* Add margin to separate it from other elements */
+    text-align: center;
     padding: 20px;
     background-color: rgba(255, 255, 255, 0.067); /* Optional: makes the text block stand out */
-    width: 100%; /* Optional: you can adjust the width as needed */
+    width: 80%; /* Adjust the width as needed */
     font-family: Arial, sans-serif;
+    height: 800px;
+}
+
+/* Style for the image container */
+#imageContainer {
+    margin-top: 20px; /* Add spacing between the text block and image container */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px; /* Adjust spacing between images */
+    justify-items: center;
+    align-items: center;
 }
 html {
     scroll-behavior: smooth;
