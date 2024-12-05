@@ -29,8 +29,7 @@
   <section id="intro">
     <h2>Stamp collections and their estimated values</h2>
     <div id="introImages">
-    <img src="Assets/introImage.jpg">
-       
+    <img src="Assets/introImage.jpg">       
     </div>
     <h3>Stamps are more than just pieces of paper; they often commemorate important historical events, figures, or milestones. For collectors, owning a stamp is like owning a piece of history.<br><br>
         The staggering valuations of certain stamps, can seem absurd. But how are these figures determined? It’s a combination of rarity, condition, historical significance, and original price that drives its worth. Each stamp's story, including its rarity due to printing errors or limited releases, plays a significant role in its eventual price. </h3>
@@ -45,7 +44,7 @@
                   <img src="https://ids.si.edu/ids/deliveryService?id=NPM-1998_2005_15_2" width="300" height="300">
                 </div>
                 <div class="col-md-7">
-                  <section id="radarChart"></section>
+                  <section id="radarChartIntro"></section>
                 </div>
                 </div>
               </div>
@@ -56,25 +55,24 @@
         
      </section>
 
+
+
+
+
    
     <section id="barZone">
-      <h3 style="color: black; width: 70%;"> Let’s take a closer look at how these factors come together to estimate the market value of  the Smithsonian’s collection of  1412 CC0 postage stamps. </h3>
-      <section id="barChart"></section>
-      
-      <div id="modal" style="display: none;">
-        <div id="modal-content">
-            <img id="modal-image">
-            <div class="modal-text">
-                
-                <h2 id="modal-image-container" class = "modal-name"> </h2>
-                <h5 id="modal-radar"></h5>
-                <h5 id="modal-image"></h5>
-                <h5 id="modal-name"></h5>
-                <h5 id="modal-desc"></h5>
-            </div>
-            <span id="close-modal">&times;</span>
+      <h2 class="white-bg">Let’s take a closer look at how these factors come together to estimate the market value of the Smithsonian’s collection of 1412 CC0 postage stamps.</h2>
+      <h3 class="white-bg"> Hover to see images, click to see factor distribution.</h3>
+      <section id="bucketZone" class="row">
+        <div class="col-md-9">
+          <section id="barChart"></section>
         </div>
-    </div>
+        <div class="col-md-3">
+          <div id="radarChart"></div>
+        </div>
+        
+      </section>
+    
 
        
         
@@ -83,11 +81,27 @@
      <section id="parallelZone">
       <h3> Let’s drill down on these individual factors. You can drag the corners of the bars to adjust each filter. The left shows the lowest values for each category, while the right shows the highest values</h3>
       <section id="ParallelChart"></section>
-      <div id="textBlock" style="width: 500px; height: 600px;"></div> 
+      <div id="textBlock" style="width: 500px; height: 900px;"></div> 
       <div id="imageContainer"></div>
 
         
     </section>
+
+  </section>
+
+  <section id="outro">
+    <div id="space"></div>
+   <h2>Positionality</h2>
+   <h3>As a child, I loved stamps. Not having yet discovered the power of google, I would tear them off of the envelopes I found them on, and use gum to stick them onto the pages of an old diary. Obviously, that’s a terrible way to collect stamps. Slowly, my friends and relatives started bringing me the stamps they found, I learnt of their value, their cultural and historical significance. This project aims open the world of philately to new audiences and encourage a deeper appreciation for these miniature artefacts of human history.</h3>
+   <h2>Methodology</h2>
+   <h3>To calculate the indices for this project, I started by identifying key factors that influence a stamp’s value, such as condition, rarity, historical context, and printing techniques. Each factor was then quantified based on specific attributes—like the presence of words such as "unused" or "mint" in the description for condition, or terms like "proof plate" for rarity. These individual indices were then weighted and combined to create a composite score that reflects both tangible and cultural aspects of a stamp’s worth. The process aimed to balance objective analysis with the inherent subjectivity of valuing artifacts, making it easier to explore the Smithsonian’s stamp collection through an accessible, data-driven lens.</h3>
+
+   <!-- <section id="ParallelChart"></section>
+   <div id="textBlock" style="width: 500px; height: 900px;"></div> 
+   <div id="imageContainer"></div> -->
+
+     
+ </section>
 
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>

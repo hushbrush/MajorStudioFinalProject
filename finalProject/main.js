@@ -182,7 +182,8 @@ async function runCode() {
         
     }
     
-    createRadarChart(bucketedData[2].allIndices)
+    createRadarChart(bucketedData[2].allIndices, "#radarChartIntro")
+    createRadarChart(bucketedData[2].allIndices, "#radarChart")
     createBucketChart(bucketedData);
     createParallelChart(bucketedData);
     showImages(bucketedData);
@@ -519,14 +520,18 @@ function classifyStampByBucket(data) {
     return(data)
 }
 
-
-function createRadarChart(data) {
+// Function to handle line click event
+function handleLineClick(data) {
+    console.log("Line clicked:", data);
+     createRadarChart(data.allIndices, "#radarChart");
+}
+function createRadarChart(data, location) {
     
     var margin = {top: 100, right: 100, bottom: 100, left: 100},
      width = 300;
     let height = 300;
 
-    const svg = d3.select("#radarChart")
+    const svg = d3.select(location)
         .append("svg")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
@@ -667,6 +672,9 @@ function createBucketChart(data) {
         .on("mouseout", function () {
             tooltip.hide(); // Hide tooltip
         })
+        .on("click", function (event, d) {
+            handleLineClick(d); // Call handleLineClick function with the clicked data
+        })
         .style("stroke", function (d) {
             let colour;
             if (d.color && d.color !== null) {
@@ -722,66 +730,7 @@ function createTooltip(containerId) {
 
 
 
-// Function to handle line click event
-function handleLineClick(data) {
-    console.log("Line clicked:", data);
-    state.isModalOpen = true;
-    // Clear previous modal content
-    d3.select("#modal").style("display", "flex");
 
-    // Create a clickable image link
-    const modalImageContainer = d3.select("#modal-image-container");
-
-    // Remove existing content to avoid duplication
-    modalImageContainer.selectAll("*").remove();
-
-    // Append a link around the image
-    modalImageContainer.append("a")
-        .attr("href", data.link) // Set the link to the person's link
-        .attr("target", "_blank") // Open link in a new tab
-        .append("img")
-        .attr("src", data.thumbnail)
-        .attr("alt", data.title)
-        .style("max-width", "100%") // Ensure the image fits the modal
-        .style("height", "auto");
-
-    // Update text information
-    d3.select("#modal-radar").attr("src", createRadarChart(data.allIndices));
-    d3.select("#modal-image").attr("src", data.thumbnail);
-    d3.select("#modal-name").text(data.title);
-    d3.select("#modal-desc").text(data.description);
-
-    // Create the radar chart
-    const radarChartContainer = d3.select("#modal-radar-chart");
-
-    // Remove existing content to avoid duplication
-    radarChartContainer.selectAll("*").remove();
-
-    // Create the radar chart SVG
-    const radarChartSvg = radarChartContainer.append("svg")
-        .attr("width", 500)
-        .attr("height", 400);
-
-    // Call the createRadarChart function to generate the chart
-    createRadarChart(data.allIndices, radarChartSvg);
-
-    // Create the bucket chart
-    const bucketChartContainer = d3.select("#modal-bucket-chart");
-
-    // Remove existing content to avoid duplication
-    bucketChartContainer.selectAll("*").remove();
-
-    // Create the bucket chart SVG
-    const bucketChartSvg = bucketChartContainer.append("svg")
-        .attr("width", 500)
-        .attr("height", 400);
-
-    // Call the createBucketChart function to generate the chart
-    createBucketChart([data], bucketChartSvg);
-
-    d3.select("#modal-link")
-        .html(`<a href="${data.link}" target="_blank">☞ More Info</a>`);
-}
 
 
 
@@ -867,6 +816,8 @@ function createParallelChart(data) {
     
     }
 
+
+updateLines(selectedRanges);
 // Add invisible anchor for each dimension's slider
 dimensions.forEach(dim => {
     const axisGroup = svg.append("g")
@@ -1005,7 +956,7 @@ dimensions.forEach(dim => {
 });
 
 
-    updateLines(selectedRanges);
+   
 }
 
 // Function to update the text block with clickable links
@@ -1013,7 +964,7 @@ function updateTextBlock(selectedRanges) {
     const textBlock = document.getElementById("textBlock");
 
     let textContent = `
-        <h3> These are all the stamps that fall in the following criteria: <br>
+        <h4> These are all the stamps that fall in the following criteria: <br>
     `;
 
     // Add each range dynamically to the textContent, with clickable links
@@ -1030,7 +981,7 @@ function updateTextBlock(selectedRanges) {
             </a> <br>`;
     });
 
-    textContent += `</h3>`;
+    textContent += `</h4>`;
 
     // Set the inner HTML of the text block
     textBlock.innerHTML = textContent;
@@ -1066,7 +1017,9 @@ function showImages(data) {
         gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
         gridGap: "10px",
         justifyItems: "center",
-        alignItems: "center"
+        alignItems: "center",
+        height: "1080px", // Set container height
+        overflowY: "scroll" // Enable vertical scrolling
     });
 }
 
