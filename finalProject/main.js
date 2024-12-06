@@ -523,10 +523,40 @@ function classifyStampByBucket(data) {
 // Function to handle line click event
 function handleLineClick(data) {
     console.log("Line clicked:", data);
-     createRadarChart(data.allIndices, "#radarChart");
+
+    // Toggle the selected state of the clicked line
+    data.selected = !data.selected;
+
+    // Filter out all the stamps in the 'selected' state
+    const selectedStamps = cleanedData.filter(stamp => stamp.selected);
+
+    if (selectedStamps.length === 0) {
+        console.log("No stamps selected.");
+        createRadarChart([], "#radarChart"); // Pass empty data if nothing is selected
+        return;
+    }
+
+    // Aggregate each factor in the 'selected' stamps
+    const aggregatedIndices = {};
+    selectedStamps.forEach(stamp => {
+        Object.keys(stamp.allIndices).forEach(key => {
+            if (aggregatedIndices[key] === undefined) {
+                aggregatedIndices[key] = 0; // Initialize if not present
+            }
+            aggregatedIndices[key] += stamp.allIndices[key]; // Aggregate values
+        });
+    });
+
+    console.log("Aggregated Indices:", aggregatedIndices);
+
+    // Send the aggregated data to the radar chart creation function
+    createRadarChart(aggregatedIndices, "#radarChart");
 }
+
 function createRadarChart(data, location) {
-    
+    // Clear the existing content in the location
+    d3.select(location).html("");
+
     var margin = {top: 100, right: 100, bottom: 100, left: 100},
      width = 300;
     let height = 300;
@@ -570,15 +600,17 @@ function createRadarChart(data, location) {
         .attr("transform", `translate(${width / 2}, ${height / 2})`);
 
     // Create the radar chart polygons
-    radarChart.selectAll(".radarPolygon")
-        .data([radarData])
-        .enter()
-        .append("path")
-        .attr("class", "radarPolygon")
-        .attr("d", d => line(d))
-        .style("fill", primaryColour)
-        .style("stroke", secondaryColour)
-        .style("stroke-width", "2px");
+        radarChart.selectAll(".radarPolygon")
+            .data([radarData])
+            .enter()
+            .append("path")
+            .attr("class", "radarPolygon")
+            .attr("d", d => line(d))
+            .style("fill", blackColour)
+            .style("fill-opacity", 0.1)
+            .style("stroke", blackColour)
+            .style("stroke-opacity", 1)
+            .style("stroke-width", "4px");
 
     // Create the radar chart axes
     const axis = radarChart.selectAll(".radarAxis")
@@ -600,8 +632,8 @@ function createRadarChart(data, location) {
         .attr("cx", (d, i) => rScale(d.value) * Math.cos(i * angleSlice - Math.PI / 2))
         .attr("cy", (d, i) => rScale(d.value) * Math.sin(i * angleSlice - Math.PI / 2))
         .attr("r", 4)
-        .style("fill", primaryColour)
-        .style("stroke", secondaryColour)
+        .style("fill", blackColour)
+        .style("stroke", blackColour)
 
 
     axis.append("text")
@@ -610,7 +642,7 @@ function createRadarChart(data, location) {
         .attr("y", (d, i) => rScale(1.15) * Math.sin(i * angleSlice - Math.PI / 2))
         .text(d => d.axis)
         .style("text-anchor", "middle")
-        .style("fill", tertiaryColour)
+        .style("fill", blackColour)
         .style("font-size", "16px")
         .style("font-weight", "bold")
         .style("font-family", "meursault-variable, serif")
@@ -652,40 +684,45 @@ function createBucketChart(data) {
     const tooltip = createTooltip("#barChart");
 
     // Add lines
-    svg.selectAll("line")
-        .data(data)
-        .enter()
+svg.selectAll("line")
+.data(data)
+.enter()
+.append("g") // Group for both hitbox and visible line
+.each(function (d) {
+    // Append invisible line as hitbox
+    d3.select(this)
         .append("line")
-        .attr("x1", function (d) { return x(d.bucket); })
-        .attr("y1", function (d) { return y(d.orgPrice); })
-        .attr("x2", function (d) { return x(d.bucket) + x.bandwidth(); })
-        .attr("y2", function (d) { return y(d.orgPrice); })
+        .attr("x1", x(d.bucket))
+        .attr("y1", y(d.orgPrice))
+        .attr("x2", x(d.bucket) + x.bandwidth())
+        .attr("y2", y(d.orgPrice))
+        .style("stroke", "transparent") // Make it invisible
+        .style("stroke-width", 10) // Larger clickable area
         .on("mouseover", function (event, d) {
             if (d.link) {
                 tooltip.show(event, d); // Show tooltip with images
             }
         })
         .on("mousemove", function (event) {
-            // Update tooltip position as mouse moves
-            tooltip.updatePosition(event);
+            tooltip.updatePosition(event); // Update tooltip position
         })
-        .on("mouseout", function () {
-            tooltip.hide(); // Hide tooltip
-        })
+        .on("mouseout", tooltip.hide) // Hide tooltip
         .on("click", function (event, d) {
-            handleLineClick(d); // Call handleLineClick function with the clicked data
-        })
-        .style("stroke", function (d) {
-            let colour;
-            if (d.color && d.color !== null) {
-                colour = normalizeColor(d.color); // Normalize the color
-            } else {
-                colour = "#000"; // Default to black if no color is available
-            }
-            return colour;
-        })
-        .attr("stroke-width", 1)
-        .attr("opacity", 0.4);
+            handleLineClick(d); // Call handleLineClick function
+        });
+
+    // Append visible line
+    d3.select(this)
+        .append("line")
+        .attr("x1", x(d.bucket))
+        .attr("y1", y(d.orgPrice))
+        .attr("x2", x(d.bucket) + x.bandwidth())
+        .attr("y2", y(d.orgPrice))
+        .style("stroke", d.color ? normalizeColor(d.color) : "#000") // Use normalized color
+        .attr("stroke-width", 1); // Original thin line
+});
+
+
 }
 
 
