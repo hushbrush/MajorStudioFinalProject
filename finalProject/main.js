@@ -160,7 +160,7 @@ function analyseData(data) {
              {
                 obj.ssp = "NA";
             }
-
+        obj.selected = false; // Add a selected state for filtering
 
         // Add the processed object to the cleanedData array
         cleanedData.push(obj);
@@ -182,9 +182,9 @@ async function runCode() {
         
     }
     
-    createRadarChart(bucketedData[2].allIndices, "#radarChartIntro")
-    createRadarChart(bucketedData[2].allIndices, "#radarChart")
-    createBucketChart(bucketedData);
+    // createRadarChart(bucketedData[2].allIndices, "#radarChartIntro")
+    // createRadarChart(bucketedData[2].allIndices, "#radarChart")
+    // createBucketChart(bucketedData);
     createParallelChart(bucketedData);
     showImages(bucketedData);
 
@@ -198,7 +198,7 @@ runCode();
 
 function createStampIndex(stamp) {
     let index = 0;
-    console.log(stamp);
+    
     // Condition of the Stamp (Unused, Mint, etc.)(max 15)
     let conditionIndex = 0;
 
@@ -523,25 +523,24 @@ const maxValues = { collection: 5, condition: 35, rarity: 35, printingtechniques
 function aggregateAndNormalize(selectedStamps) {
     const aggregatedData = {}; // Object to store aggregated indices for each dataset
 
-    selectedStamps.forEach(stamp => {
-        const datasetKey = stamp.dataset; // Assuming `stamp.dataset` identifies the dataset
-        if (!aggregatedData[datasetKey]) {
-            aggregatedData[datasetKey] = {}; // Initialize dataset if not present
-        }
-
-        Object.keys(stamp.allIndices).forEach(key => {
-            if (!aggregatedData[datasetKey][key]) {
-                aggregatedData[datasetKey][key] = 0; // Initialize index aggregation
-            }
-            aggregatedData[datasetKey][key] += stamp.allIndices[key]; // Aggregate values
+    //if multiple stamps are selected, I want the aggregate of each index for all the stamps.
+    //no matter how many are selected, the final output is one object with each index aggregated.
+    for(i = 0; i < selectedStamps.length; i++){
+        const stamp= selectedStamps[i];
+        
+        Object.entries(stamp.allIndices).forEach(([index, value]) => {
+            // The code here needs to add every dimension for the respective stamps, and then divide by the number of stamps selected.
+            aggregatedData[index] = (aggregatedData[index] || 0) + value;
         });
-    });
-
-    // Normalize each dataset
-    Object.keys(aggregatedData).forEach(datasetKey => {
-        Object.keys(aggregatedData[datasetKey]).forEach(key => {
-            aggregatedData[datasetKey][key] /= maxValues[datasetKey]?.[key] || 1; // Normalize values
-        });
+    };
+    //problem is here, aggregateddara is nor changed at aall
+    for(i = 0; i < selectedStamps.length; i++){
+    }
+    Object.entries(aggregatedData).forEach(eachIndex => {
+        
+        aggregatedData[eachIndex[0]] = eachIndex[1]/(selectedStamps.length);
+        
+      
     });
 
     return aggregatedData; // Return normalized aggregated data
@@ -549,32 +548,47 @@ function aggregateAndNormalize(selectedStamps) {
 
 // Handle line clicks
 function handleLineClick(data) {
-    console.log("Line clicked:", data);
-
-    // Toggle the selected state of the clicked line
-    data.selected = !data.selected;
-    // Toggle the opacity of the radar polygons based on select
-    // Filter out all the stamps in the 'selected' state
-    const selectedStamps = cleanedData.filter(stamp => stamp.selected);
-
-    if (selectedStamps.length === 0) {
-        console.log("No stamps selected.");
-        createRadarChart([], "#radarChart"); // Pass empty data if nothing is selected
+    if (!data) {
+        console.error("Data is undefined. Ensure that the click event is passing the correct data.");
         return;
     }
+    
+    data.selected = !data.selected;
+    const selectedStamps = cleanedData.filter(stamp => stamp.selected==true);
+    
+    if (selectedStamps.length > 0) {
+        console.log("Selected Stamps:", selectedStamps);
+        // Set the stroke opacity based on the selected state
+        d3.selectAll(".line")
+            .each((d, i) => {
+                console.log(`Line ${i}:`, d); // Check if `d` is defined
+            });
 
-    // Aggregate and normalize data by dataset
-    const aggregatedIndices = aggregateAndNormalize(selectedStamps);
+        d3.selectAll("line")
+            .data(cleanedData) // Ensure correct data binding
+            .style("stroke-opacity", d => {
+                console.log("after line opacity: " + d.selected);
+                return d.selected ? 1 : 0.1;
+            });
 
-    console.log("Aggregated and Normalized Indices:", aggregatedIndices);
-
-    // Pass aggregated indices to the radar chart creation function
-    // createRadarChart(aggregatedIndices, "#radarChart");
+    
+            
+        // Aggregate and normalize data by dataset
+        const aggregatedIndices = aggregateAndNormalize(selectedStamps);
+        // Pass aggregated indices to the radar chart creation function
+        createRadarChart(aggregatedIndices, "#radarChart");
+    } else {
+        console.log("No stamps selected.");
+        d3.selectAll("line")
+            .style("stroke-opacity", 1);
+        createRadarChart([], "#radarChart"); // Pass empty data if nothing is selected
+    }
 }
 
-function createRadarChart(data, location) {
-    // Clear the existing content in the location
 
+function createRadarChart(data, location) {
+    
+    
     d3.select(location).html("");
 
     var margin = {top: 100, right: 100, bottom: 100, left: 100},
@@ -594,6 +608,7 @@ function createRadarChart(data, location) {
     const radarData = Object.entries(data).map(([key, value]) => {
         const maxKey = `max${key}`;
         const max = eval(maxKey);
+        
         return { axis: key, value: value / (max || 1), maxValue: max };
     });
     
@@ -707,7 +722,7 @@ function createBucketChart(data) {
   
 
     // Add lines
-    console.log(data);
+    
 svg.selectAll("line")
 .data(data)
 .enter()
@@ -730,7 +745,7 @@ svg.selectAll("line")
             const siblings = d3.select(this.parentNode).selectAll("line");
     
             siblings.each(function (siblingData, index) {
-                console.log(siblingData.orgPrice)
+                
                 // Ensure siblingData is valid and matches the expected conditions
                 if (siblingData && siblingData.thumbnail) {
                     d3.select(this.parentNode) // Append to the parent group
@@ -760,6 +775,7 @@ svg.selectAll("line")
         d3.selectAll(".center-image").remove();
     })
     .on("click", function (event, d) {
+       
         handleLineClick(d);
     });
     
@@ -780,43 +796,7 @@ svg.selectAll("line")
 
 
 
-function createTooltip(containerId) {
-    // Create a tooltip container
-    const tooltip = d3.select(containerId)
-        .append("div")
-        .attr("class", "tooltip")
-        .style("position", "absolute")
-        .style("background", "white")
-        .style("border", "1px solid #ccc")
-        .style("padding", "10px")
-        .style("display", "none")
-        .style("pointer-events", "none");
 
-    return {
-        show: (event, data) => {
-            // Populate tooltip with images
-            const content = Array.isArray(data.link) 
-                ? data.link.map(link => `<img src="${link}" style="width: 50px; height: 50px; margin: 5px;">`).join("")
-                : data.thumbnail ? `<img src="${data.thumbnail}" style="width: 50px; height: 50px;">` 
-                : "No images available";
-
-            tooltip
-                .html(content)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY + 10) + "px")
-                .style("display", "block");
-        },
-        updatePosition: (event) => {
-            // Update tooltip position
-            tooltip
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY + 10) + "px");
-        },
-        hide: () => {
-            tooltip.style("display", "none");
-        }
-    };
-}
 
 d3.select("#close-modal").on("click", function() {
     d3.select("#modal").style("display", "none");
@@ -830,7 +810,7 @@ d3.select("#modal").on("click", function(event) {
 
 
 function createParallelChart(data) {
-    var margin = { top: 50, right: 20, bottom: 20, left: 0 };
+    var margin = { top: 50, right: 20, bottom: 20, left: 10 };
     var width = 1000 - margin.left - margin.right;
     var height = 3500 - margin.top - margin.bottom;
 
@@ -897,10 +877,12 @@ function createParallelChart(data) {
             update => update, // Update unchanged
             exit => exit.remove() // Remove lines no longer matching filter
         );
-    
+        svg.selectAll(".axis").each(function () {
+            this.parentNode.appendChild(this); // Move axis groups to the end of the DOM
+        });
     }
 
-console.log(selectedRanges)
+
 updateLines(selectedRanges);
 // Add invisible anchor for each dimension's slider
 dimensions.forEach(dim => {
@@ -1015,15 +997,17 @@ dimensions.forEach(dim => {
             sliderLine.attr("x1", leftX).attr("x2", rightX);
         }
 
-        // Add reset button
+        
         const resetButton = axisGroup.append("image")
-        .attr("x", width + 30)
-        .attr("y", -10) // Adjust y-position to align the image correctly
-        .attr("width", 100) // Set the width of the image
-        .attr("height", 100) // Set the height of the image
-        .attr("href", "assets/reset.png") // Path to the reset image
+        .attr("visibility", "visible")
+        .attr("x", width)
+        .attr("y", -40) // Adjust y-position to align the image correctly
+        .attr("width", 500) // Set the width of the image
+        .attr("height", 500) // Set the height of the image
+        .attr("xlink:href", "./assets/radarImage.png")
         .style("cursor", "pointer")
         .on("click", function () {
+            console.log("Resetting range for", dim);
             // Reset selected range
             selectedRanges[dim] = [xScales[dim].domain()[0], xScales[dim].domain()[1]];
     
@@ -1031,14 +1015,16 @@ dimensions.forEach(dim => {
             handleLeft.attr("cx", xScales[dim](selectedRanges[dim][0]));
             handleRight.attr("cx", xScales[dim](selectedRanges[dim][1]));
     
-            // Reset slider segments
-            updateSliderSegments();
+            
     
             // Update visualization and text block
             updateLines();
+            // Reset slider segments
+            updateSliderSegments();
             updateTextBlock(selectedRanges);
             
         });
+
     
 });
 
@@ -1051,7 +1037,7 @@ function updateTextBlock(selectedRanges) {
     const textBlock = document.getElementById("textBlock");
 
     let textContent = `
-        <h4> These are all the stamps that fall in the following criteria: <br>
+        <h3> These are all the stamps that fall in the following criteria: <br>
     `;
 
     // Add each range dynamically to the textContent, with clickable links
@@ -1068,7 +1054,7 @@ function updateTextBlock(selectedRanges) {
             </a> <br>`;
     });
 
-    textContent += `</h4>`;
+    textContent += `</h3>`;
 
     // Set the inner HTML of the text block
     textBlock.innerHTML = textContent;
