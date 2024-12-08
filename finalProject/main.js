@@ -504,11 +504,7 @@ index += printerIndex;
 
 function classifyStampByBucket(data) {
     
-    if (data.index >= 190) {
-        data.bucket = "Extraordinarily High Value";
-        } else if (data.index >= 160) {
-        data.bucket = "Extremely Rare";
-        } else if (data.index >= 100) {
+     if (data.index >= 100) {
         data.bucket = "Very High Value";
         } else if (data.index >= 70) {
         data.bucket = "High Value";
@@ -520,7 +516,38 @@ function classifyStampByBucket(data) {
     return(data)
 }
 
-// Function to handle line click event
+// Assume `maxValues` is an object with normalization values for each index and dataset
+const maxValues = { collection: 5, condition: 35, rarity: 35, printingtechniques: 20, edition: 10, historicalsignificance: 30, famousfigures: 10, denomination: 20, perforation: 12, date: 30, collection: 5, printer: 5 };
+
+// Function to aggregate indices by dataset
+function aggregateAndNormalize(selectedStamps) {
+    const aggregatedData = {}; // Object to store aggregated indices for each dataset
+
+    selectedStamps.forEach(stamp => {
+        const datasetKey = stamp.dataset; // Assuming `stamp.dataset` identifies the dataset
+        if (!aggregatedData[datasetKey]) {
+            aggregatedData[datasetKey] = {}; // Initialize dataset if not present
+        }
+
+        Object.keys(stamp.allIndices).forEach(key => {
+            if (!aggregatedData[datasetKey][key]) {
+                aggregatedData[datasetKey][key] = 0; // Initialize index aggregation
+            }
+            aggregatedData[datasetKey][key] += stamp.allIndices[key]; // Aggregate values
+        });
+    });
+
+    // Normalize each dataset
+    Object.keys(aggregatedData).forEach(datasetKey => {
+        Object.keys(aggregatedData[datasetKey]).forEach(key => {
+            aggregatedData[datasetKey][key] /= maxValues[datasetKey]?.[key] || 1; // Normalize values
+        });
+    });
+
+    return aggregatedData; // Return normalized aggregated data
+}
+
+// Handle line clicks
 function handleLineClick(data) {
     console.log("Line clicked:", data);
 
@@ -536,30 +563,23 @@ function handleLineClick(data) {
         return;
     }
 
-    // Aggregate each factor in the 'selected' stamps
-    const aggregatedIndices = {};
-    selectedStamps.forEach(stamp => {
-        Object.keys(stamp.allIndices).forEach(key => {
-            if (aggregatedIndices[key] === undefined) {
-                aggregatedIndices[key] = 0; // Initialize if not present
-            }
-            aggregatedIndices[key] += stamp.allIndices[key]; // Aggregate values
-        });
-    });
+    // Aggregate and normalize data by dataset
+    const aggregatedIndices = aggregateAndNormalize(selectedStamps);
 
-    console.log("Aggregated Indices:", aggregatedIndices);
+    console.log("Aggregated and Normalized Indices:", aggregatedIndices);
 
-    // Send the aggregated data to the radar chart creation function
+    // Pass aggregated indices to the radar chart creation function
     createRadarChart(aggregatedIndices, "#radarChart");
 }
 
 function createRadarChart(data, location) {
     // Clear the existing content in the location
+
     d3.select(location).html("");
 
     var margin = {top: 100, right: 100, bottom: 100, left: 100},
-     width = 300;
-    let height = 300;
+     width = 400;
+    let height = 400;
 
     const svg = d3.select(location)
         .append("svg")
@@ -574,8 +594,9 @@ function createRadarChart(data, location) {
     const radarData = Object.entries(data).map(([key, value]) => {
         const maxKey = `max${key}`;
         const max = eval(maxKey);
-        return { axis: key, value: value / max , maxValue: max };
+        return { axis: key, value: value / (max || 1), maxValue: max };
     });
+    
 
     // Sort the radar data in descending order of max
     radarData.sort((c) => c.value);
@@ -626,7 +647,8 @@ function createRadarChart(data, location) {
         .attr("y2", (d, i) => rScale(1) * Math.sin(i * angleSlice - Math.PI / 2))
         .attr("class", "radarLine")
         .style("stroke", secondaryColour)
-        .style("stroke-width", "0.5px");
+        .style("stroke-width", "0.4px")
+        .style("stroke-opacity", "0.4");
 
     axis.append("circle") // Add circle to mark the data point on the axis
         .attr("cx", (d, i) => rScale(d.value) * Math.cos(i * angleSlice - Math.PI / 2))
@@ -643,15 +665,13 @@ function createRadarChart(data, location) {
         .text(d => d.axis)
         .style("text-anchor", "middle")
         .style("fill", blackColour)
-        .style("font-size", "16px")
+        .style("font-size", "18px")
         .style("font-weight", "bold")
         .style("font-family", "meursault-variable, serif")
-        .style("font-size", "16px")
+        .style("font-size", "18px")
         .style("font-weight", "400")
 
 }
-
-
 
 function createBucketChart(data) {
     var margin = { top: 10, right: 30, bottom: 30, left: 60 },
@@ -667,12 +687,16 @@ function createBucketChart(data) {
 
     // Add X axis
     var x = d3.scaleBand()
-        .domain(["Low Value", "Moderate Value", "High Value", "Very High Value", "Extremely Rare", "Extraordinarily High Value"])
+        .domain(["Low Value", "Moderate Value", "High Value", "Very High Value"])
         .range([0, width])
         .padding(0.2);
     svg.append("g")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+        .style("font-family", "meursault-variable, serif")
+        .style("font-size", "18px")
+        .style("font-weight", "600");
 
     // Add Y axis
     var y = d3.scaleLinear()
@@ -680,36 +704,58 @@ function createBucketChart(data) {
         .range([height, 0]);
     svg.append("g").call(d3.axisLeft(y));
 
-    // Create the tooltip
-    const tooltip = createTooltip("#barChart");
+  
 
     // Add lines
+    console.log(data);
 svg.selectAll("line")
 .data(data)
 .enter()
 .append("g") // Group for both hitbox and visible line
 .each(function (d) {
-    // Append invisible line as hitbox
     d3.select(this)
-        .append("line")
-        .attr("x1", x(d.bucket))
-        .attr("y1", y(d.orgPrice))
-        .attr("x2", x(d.bucket) + x.bandwidth())
-        .attr("y2", y(d.orgPrice))
-        .style("stroke", "transparent") // Make it invisible
-        .style("stroke-width", 10) // Larger clickable area
-        .on("mouseover", function (event, d) {
-            if (d.link) {
-                tooltip.show(event, d); // Show tooltip with images
-            }
-        })
-        .on("mousemove", function (event) {
-            tooltip.updatePosition(event); // Update tooltip position
-        })
-        .on("mouseout", tooltip.hide) // Hide tooltip
-        .on("click", function (event, d) {
-            handleLineClick(d); // Call handleLineClick function
-        });
+    .append("line")
+    .attr("x1", x(d.bucket))
+    .attr("y1", y(d.orgPrice))
+    .attr("x2", d => (x(d.bucket) || 0) + x.bandwidth())
+    .attr("y2", y(d.orgPrice))
+    .style("stroke", "transparent") // Make it invisible
+    .style("stroke-width", 10) // Larger clickable area
+    .attr("z-index", 5)
+    .on("mouseover", function (event, d) {
+        if (d.thumbnail) {
+            console.log(this.parentNode)
+           
+            
+            const imageSize = 230; // Adjust the size of the image
+    // Append the image right under the line
+    d3.select(this.parentNode)
+    .append("image")
+    .attr("id", "center-image") // Give the image an ID for easy removal
+    .attr("x", x(d.bucket) - 30) // Position the image
+    .attr("y", y(d.orgPrice)-imageSize/2) // Start at the line's position
+    .attr("width", imageSize)
+    .attr("height", imageSize)
+    .attr("href", d.thumbnail) // Use the provided image link
+    .style("opacity", 0) // Start with 0 opacity
+    .style("pointer-events", "none") // Ignore pointer events on the image
+    .transition() // Animate sliding out
+    .duration(500)
+    .ease(d3.easeCubicOut)
+    .attr("y", y(d.orgPrice) + 10) // Final position below the line
+    .style("opacity", 1)
+    .on("end", function () {
+        // Stop the transition once it's complete to prevent further animation on hover
+        d3.select(this).interrupt();
+    });
+
+        }
+    })
+    .on("mouseout", function () {
+        // Remove the image on mouseout
+        d3.select("#center-image").remove();
+    });
+    
 
     // Append visible line
     d3.select(this)
@@ -720,10 +766,8 @@ svg.selectAll("line")
         .attr("y2", y(d.orgPrice))
         .style("stroke", d.color ? normalizeColor(d.color) : "#000") // Use normalized color
         .attr("stroke-width", 1); // Original thin line
-});
-
-
 }
+);}
 
 
 
@@ -744,7 +788,7 @@ function createTooltip(containerId) {
             // Populate tooltip with images
             const content = Array.isArray(data.link) 
                 ? data.link.map(link => `<img src="${link}" style="width: 50px; height: 50px; margin: 5px;">`).join("")
-                : data.link ? `<img src="${data.link}" style="width: 50px; height: 50px;">` 
+                : data.thumbnail ? `<img src="${data.thumbnail}" style="width: 50px; height: 50px;">` 
                 : "No images available";
 
             tooltip
@@ -764,12 +808,6 @@ function createTooltip(containerId) {
         }
     };
 }
-
-
-
-
-
-
 
 d3.select("#close-modal").on("click", function() {
     d3.select("#modal").style("display", "none");
@@ -853,7 +891,7 @@ function createParallelChart(data) {
     
     }
 
-
+console.log(selectedRanges)
 updateLines(selectedRanges);
 // Add invisible anchor for each dimension's slider
 dimensions.forEach(dim => {
@@ -884,7 +922,7 @@ dimensions.forEach(dim => {
         .attr("y", -30)
         .style("text-anchor", "center")
         .style("fill", tickTextColour)
-        .style("font-size", "16px")
+        .style("font-size", "18px")
         .style("font-weight", "bold")
         .style("font-family", "meursault-variable, serif")
         .text(dim);
@@ -929,6 +967,7 @@ dimensions.forEach(dim => {
                     const newX = Math.max(0, Math.min(width, event.x)); // Clamp within range
                     d3.select(this).attr("cx", newX);
                     selectedRanges[dim][0] = xScales[dim].invert(newX); // Update range
+                   
                     updateSliderSegments();
                     updateLines(); // Update visualization
                     updateTextBlock(selectedRanges); // Update the text block
@@ -945,6 +984,7 @@ dimensions.forEach(dim => {
                     const newX = Math.max(0, Math.min(width, event.x)); // Clamp within range
                     d3.select(this).attr("cx", newX);
                     selectedRanges[dim][1] = xScales[dim].invert(newX); // Update range
+                    
                     updateSliderSegments();
                     updateLines(); // Update visualization
                     updateTextBlock(selectedRanges); // Update the text block
@@ -988,6 +1028,7 @@ dimensions.forEach(dim => {
             // Update visualization and text block
             updateLines();
             updateTextBlock(selectedRanges);
+            
         });
     
 });
@@ -1024,41 +1065,47 @@ function updateTextBlock(selectedRanges) {
     textBlock.innerHTML = textContent;
 }
 
-
 function showImages(data) {
     const imageContainer = document.getElementById("imageContainer");
 
-    // Efficiently clear previous images
-    while (imageContainer.firstChild) {
-        imageContainer.removeChild(imageContainer.firstChild);
-    }
+    // Clear previous images
+    imageContainer.innerHTML = "";
 
-    // Use a DocumentFragment for efficient rendering
-    const fragment = document.createDocumentFragment();
+    data.forEach(({ thumbnail, title }, index) => {
+        if (!thumbnail) return;
 
-    // Create and append image elements
-    data.forEach(d => {
+        // Create and configure an image element
         const image = document.createElement("img");
-        image.src = d.thumbnail;
-        image.alt = d.title;
-        image.style.height = "200px"; // Set image height
-        fragment.appendChild(image);
-    });
+        image.src = thumbnail;
+        image.alt = title || `Image ${index + 1}`;
+        image.classList.add("thumbnail");
 
-    // Append fragment to the container
-    imageContainer.appendChild(fragment);
+        // Add click event to open fullscreen
+        image.addEventListener("click", () => {
+            const overlay = document.getElementById("fullscreenOverlay");
+            const fullscreenImage = document.getElementById("fullscreenImage");
+            fullscreenImage.src = thumbnail;
+            fullscreenImage.alt = title || `Image ${index + 1}`;
+            overlay.classList.remove("hidden");
+        });
 
-    // Apply grid layout to the container
-    Object.assign(imageContainer.style, {
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-        gridGap: "10px",
-        justifyItems: "center",
-        alignItems: "center",
-        height: "1080px", // Set container height
-        overflowY: "scroll" // Enable vertical scrolling
+        // Append to the container
+        imageContainer.appendChild(image);
     });
 }
+
+// Enable horizontal scrolling with the arrow
+document.getElementById("scrollArrow").addEventListener("click", () => {
+    const imageContainer = document.getElementById("imageContainer");
+    imageContainer.scrollBy({ left: 900, behavior: "smooth" }); // Scroll right by 300px
+});
+
+// Close fullscreen overlay
+document.getElementById("closeFullscreen").addEventListener("click", () => {
+    document.getElementById("fullscreenOverlay").classList.add("hidden");
+});
+
+
 
 
 function normalizeColor(inputColor) {

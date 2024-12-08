@@ -1,4 +1,4 @@
-/* Apply a flex container to the body to center everything */
+
 body {
     background-color: #000;
     display: flex;
@@ -10,7 +10,6 @@ body {
     text-align: center; /* Ensures text inside elements is centered */
 }
 
-/* Center and style the headings */
 h1 {
 
     padding-top: 100px;
@@ -26,40 +25,29 @@ h1 {
     margin: 0; /* Remove default margin */
 }
 
+
+
 h2 {
     font-family: "meursault-variable", serif;
-    font-variation-settings: "wdth" 60, "wght" 400;
+    font-variation-settings: "wdth" 60, "wght" 500;
     color: #ffffff;
     width: 100%;
     max-width: 1042px;
-    margin: 20px 0; /* Add some spacing between elements */
+    margin: 20px auto /* Add some spacing between elements */
 }
-.white-bg h2 {
+
+h6{
+    font-size: 32px;
+    color: #000000;
     font-family: "meursault-variable", serif;
-    font-variation-settings: "wdth" 60, "wght" 400;
-    color: #000000; /* Change the text color for white background */
+    font-variation-settings: "wdth" 60, "wght" 500;
     width: 100%;
     max-width: 1042px;
-    margin: 20px 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    margin: 20px auto /* Add some spacing between elements */
 }
+
 h3 {
     color: #ffffff;
-    width: 70%;
-    max-width: 1043px;
-    font-family: "meursault-variable", serif;
-    font-size: 24px;
-    font-weight: 400;
-    line-height: var(--Display-Small-Line-Height, 44px); /* 183.333% */
-    letter-spacing: -0.25px;
-    margin: 0 auto;
-    padding-top: 100px;
-    padding-bottom: 100px;
-}
-.white-bg h3 {
-    color: #000000;
     width: 70%;
     max-width: 1043px;
     font-family: "meursault-variable", serif;
@@ -71,14 +59,26 @@ h3 {
     padding-top: 100px;
     padding-bottom: 100px;
 }
+h7{
+    color: #000000;
+    width: 70%;
+    max-width: 1043px;
+    font-family: "meursault-variable", serif;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: var(--Display-Small-Line-Height, 44px); /* 183.333% */
+    letter-spacing: -0.25px;
+    margin: 0 auto;
+    padding-top: 100px;
+    padding-bottom: 200px;
+}
 h5 {
     color: #ffffff;
     width: 70%;
     max-width: 1043px;
-
     font-family: "meursault-variable", serif;
-    font-size: 24px;
-    font-weight: 400;
+    font-size: 18px;
+    font-weight: 500;
     line-height: var(--Display-Small-Line-Height, 44px); /* 183.333% */
     letter-spacing: -0.25px;
     margin: 0 auto;
@@ -90,14 +90,16 @@ h4 {
     width: 70%;
     max-width: 1043px;
     font-family: "meursault-variable", serif;
-    font-size: 24px;
-    font-weight: 400;
+    font-size: 18px;
+    font-weight: 500;
     line-height: var(--Display-Small-Line-Height, 44px); /* 183.333% */
     letter-spacing: -0.25px;
     margin: 0 auto;
-    padding-top: 50px;
-    padding-bottom: 50px;
+    padding-top: 60px;
+    padding-bottom: 70px;
 }
+
+
 
 
 img {
@@ -108,22 +110,27 @@ img {
 }
 #barZone {
     width: 100%; /* Match the width of the SVG */
-    height: 1100px; /* Adjust based on the size of your SVG */
-    margin: 20px auto; /* Center the content */
-    border: 1px solid #ccc; /* Optional, to help visualize the boundaries */
-    padding: 20px;
+    height: 1150px; /* Adjust based on the size of your SVG */
+    padding-top: 100px;
+    padding-right: 20px;
+    padding-bottom: 0px;
+    padding-left: 20px;
     text-align: center;
     background-color: rgb(240, 234, 214);
+
 }
 
-
+#bucketZone {
+    padding-top: 100px;
+}
 #barChart {
     padding-top: 200px;
+    padding-left: 0px;
+    padding-right: 0px;
     display: flex;
-    justify-content: space-between;
     align-items: flex-end;
     height: 700px;
-    margin: 0 auto;
+    margin-left: 40px;
 }
 
 #radarChartIntro {
@@ -135,13 +142,12 @@ img {
     margin: 0 auto;
     
 }
-#radarChart {
-    display: flex;
-    /* justify-content: center;
-    align-items: center; */
+#radarChart {   
+
     width: 100%;
     height: 100%;
-    margin-left: 0;
+    margin-top: 100px;
+    margin-left: 0px;
     
 }
 #parallelChart {
@@ -195,22 +201,94 @@ row {
     height: 800px;
 }
 
-#imageContainer {
-    margin-top: 20px; /* Add spacing */
+
+
+/* overflow-y: scroll; */
+
+/* Wrapper to position the container and arrow */
+#imageContainerWrapper {
+    position: relative;
     display: flex;
-    flex-wrap: wrap; /* Allows images to wrap to the next line */
-    gap: 10px; /* Spacing between images */
-    justify-content: center; /* Align items in the center */
-    align-items: center; /* Align items vertically */
-    width: 1400px;
-    height: 1000px;
+    align-items: center;
+    width: 80vw;
+    height: 20vw;
+    overflow: hidden;
 }
 
-#imageContainer img {
-    flex: 0 1 calc(25% - 10px); /* Adjust to fit 4 images per row with a 10px gap */
-    max-width: 100%;
-    height: auto; /* Maintain aspect ratio */
+/* Image container with horizontal scrolling */
+#imageContainer {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    overflow-x: auto;
+    scroll-behavior: smooth;
 }
+
+/* Images with hover effect */
+#imageContainer img.thumbnail {
+    border: 2px #ccc;
+    height: auto;
+    transition: transform 0.2s ease-in-out;
+    cursor: pointer;
+    border-style: ridge; /* Change border style to ridge */
+}
+
+#imageContainer img.thumbnail:hover {
+    transform: scale(1.2);
+}
+
+/* Scroll arrow */
+#scrollArrow {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    border: none;
+    font-size: 4rem;
+    cursor: pointer;
+    z-index: 5;
+    color: #f0ead6;
+    border: #000;
+}
+
+/* Fullscreen overlay */
+#fullscreenOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+#fullscreenOverlay img {
+    max-width: 100%;
+    max-height: 100%;
+    border: 4px ridge #fff;
+}
+
+#fullscreenOverlay.hidden {
+    display: none;
+}
+
+/* Close button for fullscreen view */
+#closeFullscreen {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+}
+
 
 
 html {
