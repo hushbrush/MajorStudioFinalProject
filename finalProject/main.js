@@ -553,7 +553,7 @@ function handleLineClick(data) {
 
     // Toggle the selected state of the clicked line
     data.selected = !data.selected;
-
+    // Toggle the opacity of the radar polygons based on select
     // Filter out all the stamps in the 'selected' state
     const selectedStamps = cleanedData.filter(stamp => stamp.selected);
 
@@ -569,7 +569,7 @@ function handleLineClick(data) {
     console.log("Aggregated and Normalized Indices:", aggregatedIndices);
 
     // Pass aggregated indices to the radar chart creation function
-    createRadarChart(aggregatedIndices, "#radarChart");
+    // createRadarChart(aggregatedIndices, "#radarChart");
 }
 
 function createRadarChart(data, location) {
@@ -724,37 +724,45 @@ svg.selectAll("line")
     .attr("z-index", 5)
     .on("mouseover", function (event, d) {
         if (d.thumbnail) {
-            console.log(this.parentNode)
-           
-            
-            const imageSize = 230; // Adjust the size of the image
-    // Append the image right under the line
-    d3.select(this.parentNode)
-    .append("image")
-    .attr("id", "center-image") // Give the image an ID for easy removal
-    .attr("x", x(d.bucket) - 30) // Position the image
-    .attr("y", y(d.orgPrice)-imageSize/2) // Start at the line's position
-    .attr("width", imageSize)
-    .attr("height", imageSize)
-    .attr("href", d.thumbnail) // Use the provided image link
-    .style("opacity", 0) // Start with 0 opacity
-    .style("pointer-events", "none") // Ignore pointer events on the image
-    .transition() // Animate sliding out
-    .duration(500)
-    .ease(d3.easeCubicOut)
-    .attr("y", y(d.orgPrice) + 10) // Final position below the line
-    .style("opacity", 1)
-    .on("end", function () {
-        // Stop the transition once it's complete to prevent further animation on hover
-        d3.select(this).interrupt();
-    });
-
+            const imageSize = 230; // Size of the image
+    
+            // Find all relevant sibling lines (or lines in the same group) and append images
+            const siblings = d3.select(this.parentNode).selectAll("line");
+    
+            siblings.each(function (siblingData, index) {
+                console.log(siblingData.orgPrice)
+                // Ensure siblingData is valid and matches the expected conditions
+                if (siblingData && siblingData.thumbnail) {
+                    d3.select(this.parentNode) // Append to the parent group
+                        .append("image")
+                        .attr("class", "center-image") // Add a class for easy removal
+                        .attr("x", () => x(siblingData.bucket) -30)
+                        .attr("y", () => y(siblingData.orgPrice) - imageSize / 2 + index * imageSize) // Offset for multiple images
+                        .attr("width", imageSize)
+                        .attr("height", imageSize)
+                        .attr("href", siblingData.thumbnail) // Use the sibling's thumbnail
+                        .style("opacity", 0) // Start with 0 opacity
+                        .style("pointer-events", "none") // Prevent interaction
+                        .transition() // Animate appearance
+                        .duration(500)
+                        .ease(d3.easeCubicOut)
+                        .attr("y", () => y(siblingData.orgPrice) + 10 + index * imageSize) // Slide below line
+                        .style("opacity", 1)
+                        .on("end", function () {
+                            d3.select(this).interrupt(); // Stop further animations
+                        });
+                }
+            });
         }
     })
     .on("mouseout", function () {
-        // Remove the image on mouseout
-        d3.select("#center-image").remove();
+        // Remove all appended images on mouse out
+        d3.selectAll(".center-image").remove();
+    })
+    .on("click", function (event, d) {
+        handleLineClick(d);
     });
+    
     
 
     // Append visible line
@@ -768,6 +776,7 @@ svg.selectAll("line")
         .attr("stroke-width", 1); // Original thin line
 }
 );}
+
 
 
 
@@ -864,7 +873,7 @@ function createParallelChart(data) {
                 return !range || (value >= range[0] && value <= range[1]);
             });
         });
-
+        showImages(filteredData);
         svg.selectAll(".line")
         .data(filteredData, d => d.id) // Use a unique identifier if available
         .join(
