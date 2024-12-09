@@ -10,21 +10,21 @@ let primaryColour = "#f0ead6", secondaryColour = "#FFF", tertiaryColour = "#fff"
 
 
 let i, cleanedData, indexedData=[], bucketedData=[]; 
-let  maxfinalIndex;
+let  maxFinalIndex;
   // Calculate the maximum index for each factor
-  const maxcondition = 50;
-  const maxdate = 30;
-  const maxrarity = 25;
-  const maxprintingtechniques = 10;
-  const maxhistoricalsignificance= 20;
-  const maxfamousfigures = 10;
-  const maxdenomination = 10;
-  const maxcollection = 5;
-  const maxprinter = 5;
+  const maxCondition = 50;
+  const maxDate = 30;
+  const maxRarity = 25;
+  const maxPrintingTechniques = 10;
+  const maxHistoricalEvent= 20;
+  const maxFamousFigures = 10;
+  const maxDenomination = 10;
+  const maxCollection = 5;
+  const maxPrinter = 5;
 
 
-// Assume `maxValues` is an object with normalization values for each index and dataset
-const maxValues = { collection: 5, condition: 50, rarity: 25, printingtechniques: 10, historicalsignificance: 20, famousfigures: 10, denomination: 20,  date: 30, collection: 5, printer: 5 };
+// // Assume `maxValues` is an object with normalization values for each index and dataset
+// const maxValues = { collection: 5, condition: 50, rarity: 25, printingtechniques: 10, historicalsignificance: 20, famousfigures: 10, denomination: 20,  date: 30, collection: 5, printer: 5 };
 
 async function loadData() {
     try {
@@ -185,9 +185,9 @@ async function runCode() {
         
     }
     
-    // createRadarChart(bucketedData[2].allIndices, "#radarChartIntro")
-    // createRadarChart(bucketedData[2].allIndices, "#radarChart")
-    // createBucketChart(bucketedData);
+    createRadarChart(bucketedData[2].allIndices, "#radarChartIntro")
+    createRadarChart(bucketedData[2].allIndices, "#radarChart")
+    createBucketChart(bucketedData);
     createParallelChart(bucketedData);
     showImages(bucketedData);
 
@@ -571,21 +571,21 @@ index += printerIndex;
     // Add the calculated index to the stamp object
     stamp.index = index;
   
-      maxfinalIndex = maxcondition + maxrarity + maxprintingtechniques  + maxhistoricalsignificance + maxfamousfigures + maxdenomination  + maxdate + maxcollection + maxprinter;
+      maxFinalIndex = maxCondition + maxRarity + maxPrintingTechniques  + maxHistoricalEvent + maxFamousFigures + maxDenomination  + maxDate + maxCollection + maxPrinter;
     
 
     // Create an object with all the current values
     const allIndices = {
-        'condition': conditionIndex,
-        'rarity': rarityIndex,
-        'printingtechniques': printingTechniquesIndex,
-        'historicalsignificance': historicalSignificanceIndex,
-        'famousfigures': famousFiguresIndex,
-        'denomination': denominationIndex,
-        'date': dateIndex,
-        'collection': collectionIndex,
-        'printer': printerIndex,
-        'finalIndex': index
+        'Condition': conditionIndex,
+        'Rarity': rarityIndex,
+        'PrintingTechniques': printingTechniquesIndex,
+        'HistoricalEvent': historicalSignificanceIndex,
+        'FamousFigures': famousFiguresIndex,
+        'Denomination': denominationIndex,
+        'Date': dateIndex,
+        'Collection': collectionIndex,
+        'Printer': printerIndex,
+        'FinalIndex': index
     };
 
     // Add the current values object to the stamp
@@ -885,24 +885,9 @@ svg.selectAll("line")
 );}
 
 
-
-
-
-
-d3.select("#close-modal").on("click", function() {
-    d3.select("#modal").style("display", "none");
-});
-
-d3.select("#modal").on("click", function(event) {
-    if (event.target === this) {
-        d3.select("#modal").style("display", "none");
-    }
-});
-
-
 function createParallelChart(data) {
-    var margin = { top: 50, right: 100, bottom: 20, left: 100 };
-    var width = 1200 - margin.left - margin.right;
+    var margin = { top: 50, right: 200, bottom: 40, left: 200 };
+    var width = 1400 - margin.left - margin.right;
     var height = 3500 - margin.top - margin.bottom;
 
     const svg = d3.select("#ParallelChart")
@@ -1001,14 +986,16 @@ dimensions.forEach(dim => {
     // Add axis label
     axisGroup.append("text")
         .attr("class", "axis-label")
-        .attr("x", width + 50)
-        .attr("y", 0)
+        .attr("x", width + 80)
+        .attr("y", -20)
         .style("text-anchor", "left")
+        .style("text-align", "left")
         .style("fill", tickTextColour)
         .style("font-size", "18px")
         .style("font-weight", "bold")
         .style("font-family", "meursault-variable, serif")
-        .text(dim);
+        .text(dim.replace(/([A-Z][a-z]*)/g, '\n$1').trim())
+        .attr('z-index', 10);
 
     // Add slider group
     const sliderGroup = axisGroup.append("g")
