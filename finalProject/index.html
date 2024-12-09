@@ -62,7 +62,7 @@
    
     <section id="barZone">
       <h6>Let’s take a closer look at how these factors come together to estimate the market value of the Smithsonian’s collection of 1412 CC0 postage stamps.</h6>
-      <h7> Hover to see images, click to see factor distribution.</h7>
+      <h7> Hover to see images, click to see factor distribution. Select multiple to see aggregate values of factors.</h7>
       <section id="bucketZone" class="row">
         <div class="col-md-7">
           <section id="barChart"></section>
@@ -82,21 +82,22 @@
 
      <section id="parallelZone">
       <h3> Let’s drill down on these individual factors. You can drag the corners of the bars to adjust each filter. The left shows the lowest values for each category, while the right shows the highest values</h3>
-      <section id="ParallelChart"></section>
+      <div class="row">
+        <div class="col-md-10">
+          <section id="ParallelChart"></section>
+        </div>
+        <div class="col-md-2">
+          <section id="doubleRadar"></section>
+        </div>
+      </div>
+    
+      
       <div id="textBlock" style="width: 500px; height: 900px;"></div> 
       <div id="imageContainerWrapper">
         <div id="imageContainer"></div>
         <button id="scrollArrow" aria-label="Scroll right">→</button>
     </div>
-    <!--  <div class="row">
-        <div class="col-md-9">
-          <section id="ParallelChart"></section>
-        </div>
-        <div class="col-md-3">
-          <div id="textBlock" ></div> 
-        </div>
-      </div> -->
-    <!-- Fullscreen overlay for the clicked image -->
+
     <div id="fullscreenOverlay" class="hidden">
         <img id="fullscreenImage" alt="Fullscreen view">
         <button id="closeFullscreen" aria-label="Close full screen">×</button>
