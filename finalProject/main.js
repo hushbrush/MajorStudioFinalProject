@@ -10,19 +10,22 @@ let primaryColour = "#f0ead6", secondaryColour = "#FFF", tertiaryColour = "#fff"
 
 
 let i, cleanedData, indexedData=[], bucketedData=[]; 
-let  maxIndex;
+let  maxfinalIndex;
   // Calculate the maximum index for each factor
-  const maxcondition = 35;
-  const maxrarity = 35;
-  const maxprintingtechniques = 20;
-  const maxedition = 10;
-  const maxhistoricalsignificance= 30;
-  const maxfamousfigures = 10;
-  const maxdenomination = 20;
-  const maxperforation = 12;
+  const maxcondition = 50;
   const maxdate = 30;
+  const maxrarity = 25;
+  const maxprintingtechniques = 10;
+  const maxhistoricalsignificance= 20;
+  const maxfamousfigures = 10;
+  const maxdenomination = 10;
   const maxcollection = 5;
   const maxprinter = 5;
+
+
+// Assume `maxValues` is an object with normalization values for each index and dataset
+const maxValues = { collection: 5, condition: 50, rarity: 25, printingtechniques: 10, historicalsignificance: 20, famousfigures: 10, denomination: 20,  date: 30, collection: 5, printer: 5 };
+
 async function loadData() {
     try {
         const data = await d3.json('data/data.json');
@@ -240,80 +243,171 @@ if (stamp.description) {
 }
 
 index += conditionIndex;
+    // Rarity of the Stamp (max 25)
+let rarityIndex = 0;
+if (stamp.ssp === "proof plate" || stamp.title.includes("rare") || stamp.description.includes("plate proof")) {
+    rarityIndex = 25;  // Highest rarity for proof plates and rare errors
+} else if (stamp.title.includes("misprint") || stamp.description.includes("limited edition") || stamp.title.includes("unique")||stamp.title.includes("error")||(stamp.title.includes("first issue"))) {
+    rarityIndex = 20;  // Rare misprints, limited editions, or unique characteristics
+} else if (stamp.title.includes("commemorative") || stamp.description.includes("special release")) {
+    rarityIndex = 15;  // Commemorative and special issue stamps
+} else if (stamp.description.includes("first edition")|| stamp.description.includes("reprint")) {
+    rarityIndex = 10;  // Limited issue or first editions with some rarity
+} else if (stamp.description.includes("common") || stamp.title.includes("standard")) {
+    rarityIndex = 5;  // Common or standard stamps with low rarity
+}
+index += rarityIndex;
 
-   
-
-    // Perforation Types (e.g., perf 12, Grill)
-    let perforationIndex = 0;
-    if (stamp.description && (stamp.description.includes("perf 12") || stamp.description.includes("grill"))) {
-        perforationIndex = 12;
-        
-    }
-    index += perforationIndex;
-
-   // rarity of the Stamp (max 25)
-    let rarityIndex = 0;
-    if (stamp.ssp === "proof plate" || stamp.title.includes("error") || stamp.title.includes("rare") || stamp.description.includes("plate proof")) {
-        rarityIndex = 35;
-    }
-    index += rarityIndex;
 
     // rarity of the Stamp (max 10)
     let printingTechniquesIndex = 0;
-    if (stamp.medium && (stamp.medium.includes("engraving") || stamp.medium.includes("plate printing"))) {
-        printingTechniquesIndex = 20;
-    }
-    index += printingTechniquesIndex;
-
-   // rarity of the Stamp (max 15)
-    let editionIndex = 0;
-    if (stamp.title && (stamp.title.includes("first issue") || stamp.title.includes("limited edition") || stamp.description.includes("reprint"))) {
-        editionIndex = 10;
-    }
-    index += editionIndex;
-
-    // Historical Significance (e.g., Civil War, World War) max: 5
-    let historicalSignificanceIndex = 0;
-    if (stamp.topics) {
-        for (let topic of stamp.topics) {
-            if (topic.match(/(Civil War|World War|Expedition|Revolution|Historic Event|Colonial|Empire|Independence|Liberation|Rebellion|Suffrage|Equality|Socialism|Communism|Uprising|Holocaust|Genocide|Economic Crisis|Depression|Renaissance|Enlightenment|Art Movement|Labor Movement|Globalization|Exploration)/i)) {
-                historicalSignificanceIndex = 30;
-                break;
-            }
+    if (stamp.medium) {
+        if (stamp.medium.includes("engraving") || stamp.medium.includes("plate printing")) {
+            printingTechniquesIndex = 5;
+        } else if (stamp.medium.includes("lithography") || stamp.medium.includes("intaglio")) {
+            printingTechniquesIndex = 3;
+        } else if (stamp.medium.includes("woodcut") || stamp.medium.includes("screen")) {
+            printingTechniquesIndex = 2;
+        } else if (stamp.medium.includes("offset") || stamp.medium.includes("digital")) {
+            printingTechniquesIndex = 1;
         }
     }
-    index += historicalSignificanceIndex;
+    index += printingTechniquesIndex;
+    
+
+  
+    // Historical Significance (e.g., Wars, Reformations, Revolutions, Economic Movements)
+let historicalSignificanceIndex = 0;
+if (stamp.topics) {
+    for (let topic of stamp.topics) {
+        if (topic.match(/(Civil War|World War|Revolution|Historic Event|Colonial|Empire|Independence|Liberation|Rebellion|Suffrage|Equality|Socialism|Communism|Holocaust|Genocide|Economic Crisis|Great Depression|Renaissance|Enlightenment|Art Movement|Labor Movement|Globalization|Exploration)/i)) {
+            historicalSignificanceIndex = 20;
+            break;
+        } else if (topic.match(/(Spanish Inquisition|French Revolution|Industrial Revolution|Neolithic Revolution|Scientific Revolution|Abolitionism|Feminism|Civil Rights Movement|Environmentalism|Urbanization|Monarchy|Feudalism|Balkanization|Enclosure Movement|Imperialism|Great Migration|Black Plague|Treaty of Versailles|Vietnam War|Prohibition|Civil Rights Act|Suffragette|Social Reform|The New Deal|Post-War Reconstruction|Colonial Resistance|Age of Exploration|Transatlantic Slave Trade|Reformation|Age of Enlightenment|Manifest Destiny|Trail of Tears|American Revolution|Constitutional Convention|Women's Suffrage|Civil Rights Act|Labor Unions|Great Society|Space Race|The New Deal|Watergate|Freedom of Speech|Cold War Espionage)/i)) {
+            historicalSignificanceIndex = 10;        
+        } else if (topic.match(/(Pax Romana|Cold War|Terrorism|Financial Crisis|Gilded Age|Soviet Union|Fascism|Apartheid|Decolonization|Cuban Missile Crisis|Nuclear Arms Race|Arab Spring|Brexit|Climate Change|Information Revolution|Digital Age|Postmodernism)/i)) {
+            historicalSignificanceIndex = 5;
+        }
+    }
+}
+index += historicalSignificanceIndex;
+
     
 
     let famousFiguresIndex = 0;
-    if (stamp.title || stamp.depicts) {
-          // Expanded list of famous figures across various domains
-          const famousFigures = [
-                "Washington", "Franklin", "Lincoln", "Roosevelt", "Byrd", "Jefferson", "Adams", "Hamilton", 
-                "Jackson", "Kennedy", "Eisenhower", "Truman", "Carver", "Douglas", "King", "Obama", "Teddy Roosevelt", 
-                "Ford", "Madison", "Grant", "Patton", "Montgomery", "Churchill", "Stalin", "Lenin", "Einstein", 
-                "Newton", "Darwin", "Curie", "Galileo", "Tesla", "Pasteur", "Fermi", "Hemingway", "Twain", "Dickens", 
-                "Shakespeare", "Mozart", "Beethoven", "Van Gogh", "Picasso", "Michelangelo", "Socrates", "Aristotle", 
-                "Plato", "Confucius", "Gandhi", "Mandela", "Boudicca", "Catherine the Great", "Cleopatra", "Marie Curie",
-                "Harriet Tubman", "Rosa Parks", "Malcolm X", "Frederick Douglass", "Susan B. Anthony", "Wright Brothers", 
-                "Amelia Earhart", "Neil Armstrong", "Buzz Aldrin", "Steve Jobs", "Bill Gates", "Mark Zuckerberg", "Oprah"
-          ];
-     
-          // Check if the title or depicts includes any of the famous figures
-          if (famousFigures.some(figure => stamp.title?.includes(figure) || stamp.depicts?.includes(figure))) {
-                famousFiguresIndex = 10;
-          }
-     }
-     index += famousFiguresIndex;
+
+if (stamp.title || stamp.depicts) {
+    // Categorized list of famous figures
+    const famousFigures = [
+        // Politics and Leadership
+        { name: "Lincoln", score: 10 },
+        { name: "Washington", score: 10 },
+        { name: "Roosevelt", score: 9 },
+        { name: "Mandela", score: 10 },
+        { name: "Gandhi", score: 9 },
+        { name: "Churchill", score: 8 },
+        { name: "Obama", score: 7 },
+        { name: "Kennedy", score: 8 },
+        { name: "Queen", score: 7 },
+        { name: "Queen Elizabeth II", score: 7 },
+        { name: "Napoleon", score: 8 },
+        { name: "the Great", score: 7 },
+        { name: "Caesar", score: 8 },
+    
+    
+        // Science and Innovation
+        { name: "Einstein", score: 10 },
+        { name: "Curie", score: 10 },
+        { name: "Newton", score: 10 },
+        { name: "Tesla", score: 9 },
+        { name: "Edison", score: 8 },
+        { name: "Galilei", score: 10 },
+        { name: "Vinci", score: 10 },
+        { name: "Darwin", score: 8 },
+        { name: "Hawking", score: 8 },
+        { name: "Turing", score: 9 },
+        { name: "Goodall", score: 7 },
+        { name: "Mendel", score: 7 },
+        { name: "Sagan", score: 7 },
+        { name: "Carson", score: 8 },
+    
+        // Arts and Literature
+        { name: "Shakespeare", score: 10 },
+        { name: "wain", score: 8 },
+        { name: "Dickens", score: 8 },
+        { name: "Homer", score: 9 },
+        { name: "Dickinson", score: 7 },
+        { name: "Angelou", score: 7 },
+        { name: "Gogh", score: 9 },
+        { name: "Picasso", score: 9 },
+        { name: "Michelangelo", score: 10 },
+        { name: "Monet", score: 8 },
+        { name: "Beethoven", score: 9 },
+        { name: "Mozart", score: 9 },
+        { name: "Kahlo", score: 8 },
+        { name: " Bach", score: 9 },
+    
+        // Civil Rights and Activism
+        { name: "Tubman", score: 9 },
+        { name: "Rosa Parks", score: 9 },
+        { name: "Frederick Douglass", score: 9 },
+        { name: "Martin Luther King Jr.", score: 10 },
+        { name: "Susan B. Anthony", score: 8 },
+        { name: "Malcolm X", score: 8 },
+        { name: "Ida B. Wells", score: 8 },
+        { name: "Sojourner Truth", score: 8 },
+        { name: "Eleanor Roosevelt", score: 8 },
+    
+        // Exploration and Adventure
+        { name: "Amelia Earhart", score: 8 },
+        { name: "Neil Armstrong", score: 9 },
+        { name: "Buzz Aldrin", score: 8 },
+        { name: "Christopher Columbus", score: 8 },
+        { name: "Marco Polo", score: 7 },
+        { name: "Ferdinand Magellan", score: 8 },
+        { name: "Robert Falcon Scott", score: 7 },
+        { name: "Charles Lindbergh", score: 8 },
+        { name: "Sally Ride", score: 8 },
+    
+        // Modern Influencers
+        { name: "Jobs", score: 7 },
+        { name: "Gates", score: 7 },
+        { name: "Oprah Winfrey", score: 7 },
+        { name: "Mark Zuckerberg", score: 3 },
+        { name: "Elon Musk", score: 8 },
+        { name: "Jeff Bezos", score: 6 },
+        { name: "Malala Yousafzai", score: 8 },
+        { name: "Greta Thunberg", score: 6 },
+        { name: "Serena Williams", score: 5 },
+        { name: "LeBron", score: 5 }
+    ];
+    
+
+    // Normalize fields for case-insensitive comparison
+    const title = stamp.title?.toLowerCase() || "";
+    const depicts = stamp.depicts?.toLowerCase() || "";
+
+    // Find the highest score among matches
+    famousFigures.forEach(figure => {
+        const figureName = figure.name.toLowerCase();
+        if (title.includes(figureName) || depicts.includes(figureName)) {
+            famousFiguresIndex = Math.max(famousFiguresIndex, figure.score);
+        }
+    });
+}
+
+// Add the computed index to the overall index, ensuring the maximum value does not exceed 10
+index += Math.min(famousFiguresIndex, 10);
+
     
 
     // Denomination and Scarcity
     let denominationIndex = 0;
     const denomination = parseFloat(stamp.orgPrice.replace(/[^\d.-]/g, ''));
     if (denomination >= 50 || (denomination >= 1 && stamp.orgPrice.includes('$'))) {
-        denominationIndex = 20;
-    } else if (denomination >= 10) {
         denominationIndex = 10;
+    } else if (denomination >= 10) {
+        denominationIndex = 5;
     } else {
         denominationIndex = Math.round((denomination / 10) * 2);
     }
@@ -477,7 +571,7 @@ index += printerIndex;
     // Add the calculated index to the stamp object
     stamp.index = index;
   
-     maxIndex = maxcondition + maxrarity + maxprintingtechniques + maxedition + maxhistoricalsignificance + maxfamousfigures + maxdenomination + maxperforation + maxdate + maxcollection + maxprinter;
+      maxfinalIndex = maxcondition + maxrarity + maxprintingtechniques  + maxhistoricalsignificance + maxfamousfigures + maxdenomination  + maxdate + maxcollection + maxprinter;
     
 
     // Create an object with all the current values
@@ -485,14 +579,13 @@ index += printerIndex;
         'condition': conditionIndex,
         'rarity': rarityIndex,
         'printingtechniques': printingTechniquesIndex,
-        'edition': editionIndex,
         'historicalsignificance': historicalSignificanceIndex,
         'famousfigures': famousFiguresIndex,
         'denomination': denominationIndex,
-        'perforation': perforationIndex,
         'date': dateIndex,
         'collection': collectionIndex,
-        'printer': printerIndex
+        'printer': printerIndex,
+        'finalIndex': index
     };
 
     // Add the current values object to the stamp
@@ -504,11 +597,11 @@ index += printerIndex;
 
 function classifyStampByBucket(data) {
     
-     if (data.index >= 100) {
+     if (data.index >= 70) {
         data.bucket = "Very High Value";
-        } else if (data.index >= 70) {
-        data.bucket = "High Value";
         } else if (data.index >= 50) {
+        data.bucket = "High Value";
+        } else if (data.index >= 20) {
         data.bucket = "Moderate Value";
         } else {
         data.bucket = "Low Value";
@@ -516,8 +609,6 @@ function classifyStampByBucket(data) {
     return(data)
 }
 
-// Assume `maxValues` is an object with normalization values for each index and dataset
-const maxValues = { collection: 5, condition: 35, rarity: 35, printingtechniques: 20, edition: 10, historicalsignificance: 30, famousfigures: 10, denomination: 20, perforation: 12, date: 30, collection: 5, printer: 5 };
 
 // Function to aggregate indices by dataset
 function aggregateAndNormalize(selectedStamps) {
@@ -810,8 +901,8 @@ d3.select("#modal").on("click", function(event) {
 
 
 function createParallelChart(data) {
-    var margin = { top: 50, right: 20, bottom: 20, left: 10 };
-    var width = 1000 - margin.left - margin.right;
+    var margin = { top: 50, right: 100, bottom: 20, left: 100 };
+    var width = 1200 - margin.left - margin.right;
     var height = 3500 - margin.top - margin.bottom;
 
     const svg = d3.select("#ParallelChart")
@@ -904,14 +995,15 @@ dimensions.forEach(dim => {
     axisGroup.call(d3.axisBottom(xScales[dim]))
         .selectAll("text")
         .style("fill", tickTextColour)
-        .style("font-size", "14px");
+        .style("font-family", "meursault-variable, serif")
+        .style("font-size", "18px");
 
     // Add axis label
     axisGroup.append("text")
         .attr("class", "axis-label")
-        .attr("x", width - 30)
-        .attr("y", -30)
-        .style("text-anchor", "center")
+        .attr("x", width + 50)
+        .attr("y", 0)
+        .style("text-anchor", "left")
         .style("fill", tickTextColour)
         .style("font-size", "18px")
         .style("font-weight", "bold")
@@ -958,7 +1050,7 @@ dimensions.forEach(dim => {
                     const newX = Math.max(0, Math.min(width, event.x)); // Clamp within range
                     d3.select(this).attr("cx", newX);
                     selectedRanges[dim][0] = xScales[dim].invert(newX); // Update range
-                   
+                    resetButton.attr("visibility", "visible");
                     updateSliderSegments();
                     updateLines(); // Update visualization
                     updateTextBlock(selectedRanges); // Update the text block
@@ -975,7 +1067,7 @@ dimensions.forEach(dim => {
                     const newX = Math.max(0, Math.min(width, event.x)); // Clamp within range
                     d3.select(this).attr("cx", newX);
                     selectedRanges[dim][1] = xScales[dim].invert(newX); // Update range
-                    
+                    resetButton.attr("visibility", "visible");
                     updateSliderSegments();
                     updateLines(); // Update visualization
                     updateTextBlock(selectedRanges); // Update the text block
@@ -986,6 +1078,7 @@ dimensions.forEach(dim => {
 
         // Function to update slider segments
         function updateSliderSegments() {
+            
             const leftX = xScales[dim](selectedRanges[dim][0]);
             const rightX = xScales[dim](selectedRanges[dim][1]);
 
@@ -998,19 +1091,19 @@ dimensions.forEach(dim => {
         }
 
         
-        const resetButton = axisGroup.append("image")
-        .attr("visibility", "visible")
-        .attr("x", width)
-        .attr("y", -40) // Adjust y-position to align the image correctly
-        .attr("width", 500) // Set the width of the image
-        .attr("height", 500) // Set the height of the image
-        .attr("xlink:href", "./assets/radarImage.png")
+        let resetButton = axisGroup.append("image")
+        .attr("visibility", "hidden")
+        .attr("x", width+30)
+        .attr("y", -10) // Adjust y-position to align the image correctly
+        .attr("width", 30) // Set the width of the image
+        .attr("height", 30) // Set the height of the image
+        .attr("xlink:href", "./assets/reset.svg")
         .style("cursor", "pointer")
         .on("click", function () {
             console.log("Resetting range for", dim);
             // Reset selected range
             selectedRanges[dim] = [xScales[dim].domain()[0], xScales[dim].domain()[1]];
-    
+            resetButton.attr("visibility", "hidden");
             // Reset slider handles
             handleLeft.attr("cx", xScales[dim](selectedRanges[dim][0]));
             handleRight.attr("cx", xScales[dim](selectedRanges[dim][1]));
