@@ -667,7 +667,9 @@ function handleLineClick(data) {
         // Aggregate and normalize data by dataset
         const aggregatedIndices = aggregateAndNormalize(selectedStamps);
         // Pass aggregated indices to the radar chart creation function
-        createRadarChart(aggregatedIndices, "#radarChart");
+        const selectedTitles = selectedStamps.map(stamp => stamp.title);
+        
+        createRadarChart(aggregatedIndices, "#radarChart", selectedTitles);
     } else {
         console.log("No stamps selected.");
         d3.selectAll("line")
@@ -677,7 +679,7 @@ function handleLineClick(data) {
 }
 
 
-function createRadarChart(data, location) {
+function createRadarChart(data, location, titles) {
     
     
     d3.select(location).html("");
@@ -685,6 +687,19 @@ function createRadarChart(data, location) {
     var margin = {top: 100, right: 100, bottom: 100, left: 100},
      width = 400;
     let height = 400;
+    let radarColour, skeletonColour;
+    if(location == "#radarChartIntro"){
+        radarColour = "#fff";
+       // skeletonColour = "#fff";
+        
+    }
+    else
+    {
+        radarColour = "#000";
+      console.log(titles);
+        
+    }
+
 
     const svg = d3.select(location)
         .append("svg")
@@ -697,11 +712,14 @@ function createRadarChart(data, location) {
     
     // Create the radar chart
     const radarData = Object.entries(data).map(([key, value]) => {
+        if (key === "FinalIndex") {
+            return null; // Skip the last entry
+        }
         const maxKey = `max${key}`;
         const max = eval(maxKey);
         
         return { axis: key, value: value / (max || 1), maxValue: max };
-    });
+    }).filter(entry => entry !== null);
     
 
     // Sort the radar data in descending order of max
@@ -732,10 +750,10 @@ function createRadarChart(data, location) {
             .enter()
             .append("path")
             .attr("class", "radarPolygon")
-            .attr("d", d => line(d))
-            .style("fill", blackColour)
+            .attr("d", d => line(d) + "Z") // Close the shape by connecting to the first point
+            .style("fill", radarColour)
             .style("fill-opacity", 0.1)
-            .style("stroke", blackColour)
+            .style("stroke", radarColour)
             .style("stroke-opacity", 1)
             .style("stroke-width", "4px");
 
@@ -752,30 +770,33 @@ function createRadarChart(data, location) {
         .attr("x2", (d, i) => rScale(1) * Math.cos(i * angleSlice - Math.PI / 2))
         .attr("y2", (d, i) => rScale(1) * Math.sin(i * angleSlice - Math.PI / 2))
         .attr("class", "radarLine")
-        .style("stroke", secondaryColour)
-        .style("stroke-width", "0.4px")
-        .style("stroke-opacity", "0.4");
+        .style("stroke", radarColour)
+        .style("stroke-width", "0.2px")
+        .style("stroke-opacity", "0.8");
 
     axis.append("circle") // Add circle to mark the data point on the axis
         .attr("cx", (d, i) => rScale(d.value) * Math.cos(i * angleSlice - Math.PI / 2))
         .attr("cy", (d, i) => rScale(d.value) * Math.sin(i * angleSlice - Math.PI / 2))
         .attr("r", 4)
-        .style("fill", blackColour)
-        .style("stroke", blackColour)
+        .style("fill", radarColour)
+        .style("stroke", radarColour)
 
 
     axis.append("text")
         .attr("class", "radarLabel")
         .attr("x", (d, i) => rScale(1.15) * Math.cos(i * angleSlice - Math.PI / 2))
         .attr("y", (d, i) => rScale(1.15) * Math.sin(i * angleSlice - Math.PI / 2))
-        .text(d => d.axis)
+        .text(d => {
+            const label = d.axis;
+            return label.replace(/([A-Z])/g, ' $1');
+        })
         .style("text-anchor", "middle")
-        .style("fill", blackColour)
+        .style("fill", radarColour)
         .style("font-size", "18px")
         .style("font-weight", "bold")
         .style("font-family", "meursault-variable, serif")
         .style("font-size", "18px")
-        .style("font-weight", "400")
+        .style("font-weight", "400");
 
 }
 
@@ -960,6 +981,7 @@ function createParallelChart(data) {
 
 
 updateLines(selectedRanges);
+updateTextBlock(selectedRanges);
 // Add invisible anchor for each dimension's slider
 dimensions.forEach(dim => {
     const axisGroup = svg.append("g")
@@ -1115,7 +1137,6 @@ dimensions.forEach(dim => {
 // Function to update the text block with clickable links
 function updateTextBlock(selectedRanges) {
     const textBlock = document.getElementById("textBlock");
-
     let textContent = `
         <h3> These are all the stamps that fall in the following criteria: <br>
     `;
@@ -1125,12 +1146,15 @@ function updateTextBlock(selectedRanges) {
         const range = selectedRanges[rangeKey];
         const rangeName = capitalizeFirstLetter(rangeKey.replace('Range', ''));
 
+        // Add space before capital letters in rangeName
+        const formattedRangeName = rangeName.replace(/([A-Z])/g, ' $1');
+
         // Create clickable link for each range
         textContent += `
             <a href="#${rangeKey.replace('Range', '')}Anchor" 
                style="text-decoration: none; color: inherit;" 
                onclick="scrollToAnchor('${rangeKey.replace('Range', '')}Anchor')">
-               ${rangeName}: ${Math.floor(range[0])} and ${Math.floor(range[1])}
+               ${formattedRangeName}: ${Math.floor(range[0])} and ${Math.floor(range[1])}
             </a> <br>`;
     });
 
