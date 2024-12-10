@@ -19,7 +19,7 @@ let  maxFinalIndex;
   const maxHistoricalEvent= 20;
   const maxFamousFigures = 10;
   const maxDenomination = 10;
-  const maxCollection = 5;
+  const maxCollection = 11;
   const maxPrinter = 5;
 
 
@@ -183,11 +183,11 @@ async function runCode() {
         
     }
     
-    // createRadarChart(bucketedData[2].allIndices, "#radarChartIntro")
-    // createRadarChart(bucketedData[2].allIndices, "#radarChart")
-    // createBucketChart(bucketedData);
+    createRadarChart(bucketedData[2].allIndices, "#radarChartIntro")
+    createRadarChart(bucketedData[2].allIndices, "#radarChart")
+    createBucketChart(bucketedData);
     createParallelChart(bucketedData);
-    // showImages(bucketedData);
+    showImages(bucketedData);
 
     
 }
@@ -607,7 +607,6 @@ function classifyStampByBucket(data) {
     return(data)
 }
 
-
 // Function to aggregate indices by dataset
 function aggregateAndNormalize(selectedStamps) {
     const aggregatedData = {}; // Object to store aggregated indices for each dataset
@@ -642,33 +641,25 @@ function handleLineClick(data) {
         return;
     }
 
-    console.log(data.selected);
-    data.selected = !data.selected; // Toggle the selected property
-    console.log(data.selected);
+    // Toggle the `selected` state
+    data.selected = !data.selected;
 
-    // Get the updated list of selected stamps
+    // Get the updated list of selected items
     const selectedStamps = cleanedData.filter(stamp => stamp.selected);
     console.log("Selected Stamps:", selectedStamps);
 
-    // Update all lines using the same cleanedData array
-    const lines = d3.selectAll("line")
-        .data(cleanedData, d => d.link); // Bind cleanedData with a unique identifier if possible
+    // Update the styles of all lines
+    d3.selectAll(".clickable-line")
+        .style("stroke-width", d => (d.selected ? 5 : 1)) // Thicker stroke for selected lines
+        .style("stroke", d => (d.color ? d.color : "black")) // Highlight selected lines
+        .style("pointer-events", "auto"); // Ensure lines are clickable/hoverable
 
-    console.log("Lines selected:", lines.size()); // Debugging the line selection
-
-    // Update the visual styles based on the updated state
-    lines.style("stroke-width", d => (d.selected ? 5 : 1)) // Use the updated `selected` property
-         
-
+    // Update the radar chart
     if (selectedStamps.length > 0) {
         const aggregatedIndices = aggregateAndNormalize(selectedStamps);
-        const selectedTitles = selectedStamps.map(stamp => stamp.title);
-
-        createRadarChart(aggregatedIndices, "#radarChart", selectedTitles);
+        createRadarChart(aggregatedIndices, "#radarChart");
     } else {
         console.log("No stamps selected.");
-
-        // Reset the radar chart if nothing is selected
         createRadarChart([], "#radarChart");
     }
 }
@@ -677,7 +668,10 @@ function handleLineClick(data) {
 
 
 
-function createRadarChart(data, location, secondData) {
+
+
+
+function createRadarChart(data, location) {
     d3.select(location).html("");
     if(data){
 
@@ -797,36 +791,42 @@ function createRadarChart(data, location, secondData) {
         .style("font-size", "18px")
         .style("font-weight", "400");
     }
-    if(data&&secondData){
-        //add code for the parallel chart sticky radar which showws the upper and lower selected ranges here, and follows the styling of the radar chart
-
-    }
+   
 }
 
 function createBucketChart(data) {
-    var margin = { top: 10, right: 30, bottom: 30, left: 60 },
+    var margin = { top: 20, right: 30, bottom: 30, left: 60 },
         width = 1000 - margin.left - margin.right,
-        height = 700 - margin.top - margin.bottom;
+        height = 750 - margin.top - margin.bottom;
 
     const svg = d3.select("#barChart")
         .append("svg")
         .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
+        .attr("height", height + margin.top*2 + margin.bottom)
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        // Add X axis
+        var x = d3.scaleBand()
+            .domain(["Low Value", "Moderate Value", "High Value", "Very High Value"])
+            .range([0, width])
+            .padding(0.2);
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .style("font-family", "meursault-variable, serif")
+            .style("font-size", "18px")
+            .style("font-weight", "600");
 
-    // Add X axis
-    var x = d3.scaleBand()
-        .domain(["Low Value", "Moderate Value", "High Value", "Very High Value"])
-        .range([0, width])
-        .padding(0.2);
-    svg.append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x))
-        .selectAll("text")
-        .style("font-family", "meursault-variable, serif")
-        .style("font-size", "18px")
-        .style("font-weight", "600");
+        // Add X axis label
+        svg.append("text")
+            .attr("x", width / 2)
+            .attr("y", height + 40)
+            .attr("text-anchor", "middle")
+            .style("font-family", "meursault-variable, serif")
+            .style("font-size", "18px")
+            .style("font-weight", "600")
+            .text("Value Today");
 
     // Add Y axis
     var y = d3.scaleLinear()
@@ -834,72 +834,66 @@ function createBucketChart(data) {
         .range([height, 0]);
     svg.append("g").call(d3.axisLeft(y));
 
-  
+
+svg.append("text")
+   .attr("transform", "rotate(-90)")
+   .attr("y", 0 - margin.left)
+   .attr("x", 0 - (height / 2))
+   .attr("dy", "1em")
+   .style("text-anchor", "middle")
+   .style("font-family", "meursault-variable, serif")
+   .style("font-size", "18px")
+   .style("font-weight", "600")
+   .text("Original Price"); // Y axis label
+
 
     // Add lines
-    
-svg.selectAll("line")
-.data(data)
-.enter()
-.append("g") // Group for both hitbox and visible line
-.each(function (d) {
-    d3.select(this)
+    svg.selectAll("line")
+    .data(data)
+    .enter()
     .append("line")
-    .attr("x1", x(d.bucket))
-    .attr("y1", y(d.orgPrice))
-    .attr("x2", d => (x(d.bucket) || 0) + x.bandwidth())
-    .attr("y2", y(d.orgPrice))
-    .style("stroke", "transparent") // Make it invisible
-    .style("stroke-width", 10) // Larger clickable area
-    .attr("z-index", 5)
-    .on("mouseover", function (event, d) {
+    .attr("class", "clickable-line") // Add class name
+    .attr("x1", function(d) { return x(d.bucket); }) // Ensure `d` is properly referenced
+    .attr("y1", function(d) { return y(d.orgPrice); }) // Ensure `d` is properly referenced
+    .attr("x2", function(d) { return (x(d.bucket) || 0) + x.bandwidth(); }) 
+    .attr("y2", function(d) { return y(d.orgPrice); })
+    .style("stroke", function(d) { return d.color ? normalizeColor(d.color) : "#000"; })
+    .attr("stroke-width", 1)
+    .style("pointer-events", "auto")
+    .on("mouseover", function(event, d) {
         if (d.thumbnail) {
-            const imageSize = 230; // Size of the image
+            const imageSize = 230;
+            const imageY = y(d.orgPrice) - imageSize / 2;
+            const slideDistance = imageY + imageSize > height - 300 ? -imageSize/2 : 10;  // Adjust if near bottom
     
-            // Clear previously added images in the same group
             d3.select(this.parentNode).selectAll(".center-image").remove();
     
-            // Append image for the clicked line's data
-            d3.select(this.parentNode) // Append to the parent group
+            d3.select(this.parentNode)
                 .append("image")
-                .attr("class", "center-image") // Add a class for easy removal
-                .attr("x", () => x(d.bucket) - 30)
-                .attr("y", () => y(d.orgPrice) - imageSize / 2) // Center vertically
+                .attr("class", "center-image")
+                .attr("x", x(d.bucket) - 30)
+                .attr("y", imageY)
                 .attr("width", imageSize)
                 .attr("height", imageSize)
-                .attr("href", d.thumbnail) // Use the clicked line's thumbnail
-                .style("opacity", 0) // Start with 0 opacity
-                .style("pointer-events", "none") // Prevent interaction
-                .transition() // Animate appearance
+                .attr("href", d.thumbnail)
+                .style("opacity", 0)
+                .style("pointer-events", "none")
+                .transition()
                 .duration(500)
                 .ease(d3.easeCubicOut)
-                .attr("y", () => y(d.orgPrice) + 10) // Slide below line
+                .attr("y", imageY + slideDistance)
                 .style("opacity", 1);
         }
     })
-    
     .on("mouseout", function () {
-        // Remove all appended images on mouse out
         d3.selectAll(".center-image").remove();
     })
-    .on("click", function (event, d) {
-       
+    .on("click", function(event, d) {
         handleLineClick(d);
     });
-    
-    
 
-    // Append visible line
-    d3.select(this)
-        .append("line")
-        .attr("x1", x(d.bucket))
-        .attr("y1", y(d.orgPrice))
-        .attr("x2", x(d.bucket) + x.bandwidth())
-        .attr("y2", y(d.orgPrice))
-        .style("stroke", d.color ? normalizeColor(d.color) : "#000") // Use normalized color
-        .attr("stroke-width", 1); // Original thin line
 }
-);}
+
 
 
 function createParallelChart(data) {
@@ -930,11 +924,8 @@ function createParallelChart(data) {
 
     // Global state to track selected ranges
     const selectedRanges = {
-        priceRange: [0, 100],
-        rarenessRange: [0, 100],
-        vibrancyRange: [0, 100],
-        conditionRange: [0, 100],
-        typeRange: [0, 100]
+        // priceRange: [0, 100],
+        
     };
 
     // Function to filter and update lines based on sliders
@@ -1154,67 +1145,96 @@ function createDoubleRadarChart(selectedRanges, containerId) {
     const svg = d3.select(containerId)
     .html("") // Clear any existing content
     .append("svg")
-    .attr("width", 170)
-    .attr("height", 170)
+    .attr("width", 270)
+    .attr("height", 1000)
     .append("g")
-    .attr("transform", `translate(80, 80)`); 
+    .attr("transform", `translate(115, 157)`); 
+    svg
+    .append("text")
+    .attr("x", -20)
+    .attr("y", -130)
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "middle")
+    .attr("font-size", "18px")
+    .attr("font-weight", "bold")
+    .attr("font-family", "meursault-variable, serif")   
+    .attr("fill", secondaryColour)
+    .text("Current Filter Selection:");
+
+    
+
    
 
 
 
+// Create radial axes (spokes)
+dimensions.forEach((dim, i) => {
+    const angle = i * angleSlice;
+    const x = radius * Math.cos(angle - Math.PI / 2);
+    const y = radius * Math.sin(angle - Math.PI / 2);
 
-    // Create radial axes (spokes)
-    dimensions.forEach((dim, i) => {
+    // Draw axis line
+    svg.append("line")
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", x)
+        .attr("y2", y)
+        .style("stroke", "#fff")
+        .style("stroke-width", "0.2px")
+        .style("stroke-opacity", "0.8");
+
+    // Add axis label
+    svg.append("text")
+        .attr("x", (radius + 25) * Math.cos(angle - Math.PI / 2))
+        .attr("y", (radius + 27) * Math.sin(angle - Math.PI / 2))
+        .style("text-anchor", "middle")
+        .style("font-size", "12px")
+        .style("font-weight", "bold")
+        .style("font-family", "meursault-variable, serif")
+        .style("fill", secondaryColour)
+        .text(dim.replace(/([A-Z])/g, ' $1'));
+});
+
+// Max values per dimension
+const maxValues = {
+    Condition: 50,
+    Date: 30,
+    Rarity: 25,
+    PrintingTechniques: 5,
+    HistoricalEvent: 20,
+    FamousFigures: 10,
+    Denomination: 10,
+    Collection: 11,
+    Printer: 4,
+    FinalIndex: 129
+};
+
+// Function to calculate radar points
+function calculatePoints(data) {
+    return data.map((value, i) => {
         const angle = i * angleSlice;
-        const x = radius * Math.cos(angle - Math.PI / 2);
-        const y = radius * Math.sin(angle - Math.PI / 2);
+        const dimension = dimensions[i]; // Get dimension name
+        const maxValue = maxValues[dimension]; // Look up max value for dimension
 
-        // Draw axis line
-        svg.append("line")
-            .attr("x1", 0)
-            .attr("y1", 0)
-            .attr("x2", x)
-            .attr("y2", y)
-            .style("stroke", "#fff")
-            .style("stroke-width", "1px");
+        if (!maxValue) {
+            console.error(`Max value not defined for dimension: ${dimension}`);
+            return [0, 0];
+        }
 
-        // Add axis label
-        svg.append("text")
-            .attr("x", (radius + 20) * Math.cos(angle - Math.PI / 2))
-            .attr("y", (radius + 20) * Math.sin(angle - Math.PI / 2))
-            .style("text-anchor", "middle")
-            .style("font-size", "18px")
-            .style("font-weight", "bold")
-            .style("font-family", "meursault-variable, serif")
-            .style("fill", primaryColour)
-            .text(dim);
+        const r = (value / maxValue) * radius; // Normalize values to chart radius
+        const x = r * Math.cos(angle - Math.PI / 2);
+        const y = r * Math.sin(angle - Math.PI / 2);
+        return [x, y];
     });
+}
 
-    // Function to calculate radar points
-    function calculatePoints(data) {
-        return data.map((value, i) => {
-            const angle = i * angleSlice;
-            const r = (value / 100) * radius; // Normalize values to chart radius
-            const x = r * Math.cos(angle - Math.PI / 2);
-            const y = r * Math.sin(angle - Math.PI / 2);
-            return [x, y];
-        });
-    }
 
     // Calculate points for lower and upper ranges
     const lowerPoints = calculatePoints(lowerRangeData);
     const upperPoints = calculatePoints(upperRangeData);
 
     // Draw radar polygons
-    const radarArea = [lowerPoints, upperPoints];
-    radarArea.forEach((points, i) => {
-        svg.append("polygon")
-            .attr("points", points.map(p => p.join(",")).join(" "))
-            .style("fill", "#fff")
-            .style("stroke", "steelblue")
-            .style("stroke-width", 0.6)
-            .style("opacity", 0.6);
-    });
+  
 
     // Connect points with lines
     lowerPoints.forEach((p1, i) => {
@@ -1224,8 +1244,24 @@ function createDoubleRadarChart(selectedRanges, containerId) {
             .attr("y1", p1[1])
             .attr("x2", p2[0])
             .attr("y2", p2[1])
-            .style("stroke", primaryColour)
-            .style("stroke-width", 3)
+            .style("stroke", secondaryColour)
+            .style("stroke-width", 2);
+
+        // Add circles to both ends of the line
+        svg.append("circle")
+            .attr("cx", p1[0])
+            .attr("cy", p1[1])
+            .attr("r", 2)
+            .style("fill", secondaryColour);
+
+        svg.append("circle")
+            .attr("cx", p2[0])
+            .attr("cy", p2[1])
+            .attr("r", 2)
+            .style("fill", secondaryColour);
+
+         
+    
     });
 }
 
@@ -1238,7 +1274,7 @@ function createDoubleRadarChart(selectedRanges, containerId) {
 function updateTextBlock(selectedRanges) {
     const textBlock = document.getElementById("textBlock");
     let textContent = `
-        <h3> These are all the stamps that fall in the following criteria: <br>
+        <h3> These are all the stamps that fall in the following criteria: <br> <br>
     `;
 
     // Add each range dynamically to the textContent, with clickable links

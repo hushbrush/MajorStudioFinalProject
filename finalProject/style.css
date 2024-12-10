@@ -59,6 +59,17 @@ h3 {
     padding-top: 100px;
     padding-bottom: 100px;
 }
+#textBlock h3 {
+
+    color: #ffffff;
+    width: 70%;
+    max-width: 1043px;
+    font-family: "meursault-variable", serif;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: var(--Display-Small-Line-Height, 44px); /* 183.333% */
+    letter-spacing: -0.25px;
+}
 h7{
     color: #000000;
     width: 70%;
@@ -110,7 +121,7 @@ img {
 }
 #barZone {
     width: 100%; /* Match the width of the SVG */
-    height: 1150px; /* Adjust based on the size of your SVG */
+    height: 1300px; /* Adjust based on the size of your SVG */
     padding-top: 100px;
     padding-right: 20px;
     padding-bottom: 0px;
@@ -129,7 +140,7 @@ img {
     padding-right: 0px;
     display: flex;
     align-items: flex-end;
-    height: 700px;
+    height: 720px;
     margin-left: 40px;
 }
 
@@ -196,16 +207,15 @@ row {
     margin: 10px auto; 
     text-align: center;
     padding: 10px;
-    background-color: rgba(255, 255, 255, 0.067); /* Optional: makes the text block stand out */
+   
     width: 80%; /* Adjust the width as needed */
     font-family: Arial, sans-serif;
-    height: 800px;
+    height: 700px;
 }
 #doubleRadar {
     position: sticky; 
     top: 0; /* Sticks to the top of the viewport when within the containing block */
     z-index: 999; 
-    background-color: #333;
    
   }
 
@@ -215,11 +225,13 @@ row {
 /* Wrapper to position the container and arrow */
 #imageContainerWrapper {
     position: relative;
-    display: flex;
+    /* display: flex; */
     align-items: center;
+    justify-content: center; /* Add this line to center the container */
     width: 80vw;
     height: 20vw;
     overflow: hidden;
+    left: 7%
 }
 
 /* Image container with horizontal scrolling */
