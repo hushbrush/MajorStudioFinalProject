@@ -32,6 +32,5 @@ Final:
 
 
 
-2-5 screenshots, including a representative hero.png image (16:9, 1920x1080px)
-https://hushbrush.github.io/MajorStudioFinalProject/finalProject/
+link: https://hushbrush.github.io/MajorStudioFinalProject/finalProject/
 
