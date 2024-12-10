@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "vite",
+    "build": "vite build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,4 +17,3 @@
     "vite": "^4.2.1"
   }
 }
-

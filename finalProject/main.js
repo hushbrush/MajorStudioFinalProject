@@ -1,9 +1,12 @@
 
-import { colord } from 'colord';
-import { extend } from 'colord';
-import namesPlugin from 'colord/plugins/names';
 
-// Enable CSS color names support
+import { colord, extend } from 'colord'; // Import colord and extend method
+import namesPlugin from 'colord/plugins/names'; // Import the names plugin
+
+// Apply the plugin to the colord instance
+colord().plugin(namesPlugin);
+
+// Enable CSS color names support globally
 extend([namesPlugin]);
 
 let primaryColour = "#f0ead6", secondaryColour = "#FFF", tertiaryColour = "#fff", bandColor= "#000", dimColour="#b3b3b3", highlightColour="#fff", tickTextColour= "#d1d1d1", blackColour= "#000";
