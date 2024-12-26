@@ -714,7 +714,6 @@ function createRadarChart(data, location) {
         if (key === "FinalIndex") return null;
     
         const max = maxValues[key]; // Dynamically access the max value
-        console.log(`Max for ${key}:`, max);
     
         return { axis: key, value: value / (max || 1), maxValue: max };
     }).filter(entry => entry !== null);
@@ -1109,7 +1108,7 @@ dimensions.forEach(dim => {
         .attr("y", -10) // Adjust y-position to align the image correctly
         .attr("width", 30) // Set the width of the image
         .attr("height", 30) // Set the height of the image
-        .attr("xlink:href", "Assets/reset.svg")
+        .attr("xlink:href", "finalProject/Assets/reset.svg")
         .style("cursor", "pointer")
         .on("click", function () {
             console.log("Resetting range for", dim);
