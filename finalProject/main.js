@@ -934,7 +934,7 @@ function createParallelChart(data) {
         // priceRange: [0, 100],
         
     };
-
+    createDoubleRadarChart( selectedRanges, "#doubleRadar");
     // Function to filter and update lines based on sliders
     function updateLines() {
         const filteredData = data.filter(d => {
@@ -982,7 +982,7 @@ function createParallelChart(data) {
 
 
 updateLines(selectedRanges);
-createDoubleRadarChart( selectedRanges, "#doubleRadar");
+
 //problem here: figure out selected ranges
 updateTextBlock(selectedRanges);
 // Add invisible anchor for each dimension's slider
