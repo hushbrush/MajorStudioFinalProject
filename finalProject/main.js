@@ -697,18 +697,25 @@ function createRadarChart(data, location) {
                 .attr("transform",
                     "translate(" + margin.left + "," + margin.top + ")");
 
-    
+    const maxValues = {
+        Condition: 50,
+        Date: 30,
+        Rarity: 25,
+        PrintingTechniques: 10,
+        HistoricalEvent: 20,
+        FamousFigures: 10,
+        Denomination: 10,
+        Collection: 11,
+        Printer: 5,
+    };
+
     // Create the radar chart
     const radarData = Object.entries(data).map(([key, value]) => {
-        if (key === "FinalIndex") {
-            return null; // Skip the last entry
-        }
-        const maxKey = `max${key}`;
-        console.log(maxKey);
-        console.log(value);
-
-        const max = eval(maxKey);
-        
+        if (key === "FinalIndex") return null;
+    
+        const max = maxValues[key]; // Dynamically access the max value
+        console.log(`Max for ${key}:`, max);
+    
         return { axis: key, value: value / (max || 1), maxValue: max };
     }).filter(entry => entry !== null);
     
