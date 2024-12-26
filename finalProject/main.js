@@ -21,7 +21,6 @@ let  maxFinalIndex;
   const maxPrinter = 5;
 
 
-
 async function loadData() {
     try {
         const data = await d3.json('data.json');
