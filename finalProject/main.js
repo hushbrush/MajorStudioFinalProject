@@ -171,6 +171,7 @@ function analyseData(data) {
 // Load the data
 async function runCode() {
     await loadData();
+    
     for (i = 0; i < cleanedData.length; i++) {
         indexedData[i] = createStampIndex(cleanedData[i]);
         bucketedData[i] = classifyStampByBucket(indexedData[i]);
@@ -180,8 +181,8 @@ async function runCode() {
         
     }
     
-    // createRadarChart(bucketedData[2].allIndices, "#radarChartIntro")
-    // createRadarChart(bucketedData[2].allIndices, "#radarChart")
+    createRadarChart(bucketedData[2].allIndices, "#radarChartIntro")
+    createRadarChart(bucketedData[2].allIndices, "#radarChart")
     createBucketChart(bucketedData);
     createParallelChart(bucketedData);
     showImages(bucketedData);
@@ -703,6 +704,9 @@ function createRadarChart(data, location) {
             return null; // Skip the last entry
         }
         const maxKey = `max${key}`;
+        console.log(maxKey);
+        console.log(value);
+
         const max = eval(maxKey);
         
         return { axis: key, value: value / (max || 1), maxValue: max };
