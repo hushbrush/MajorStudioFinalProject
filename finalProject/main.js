@@ -24,7 +24,7 @@ let  maxFinalIndex;
 
 async function loadData() {
     try {
-        const data = await d3.json('data/data.json');
+        const data = await d3.json('data.json');
         cleanedData = analyseData(data);
         
     } catch (error) {
