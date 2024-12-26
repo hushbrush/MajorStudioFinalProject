@@ -10,15 +10,15 @@ let primaryColour = "#f0ead6", secondaryColour = "#FFF", tertiaryColour = "#fff"
 let i, cleanedData, indexedData=[], bucketedData=[]; 
 let  maxFinalIndex;
   // Calculate the maximum index for each factor
-  const maxCondition = 50;
-  const maxDate = 30;
-  const maxRarity = 25;
-  const maxPrintingTechniques = 10;
-  const maxHistoricalEvent= 20;
-  const maxFamousFigures = 10;
-  const maxDenomination = 10;
-  const maxCollection = 11;
-  const maxPrinter = 5;
+const maxCondition = 50;
+const maxDate = 30;
+const maxRarity = 25;
+const maxPrintingTechniques = 10;
+const maxHistoricalEvent= 20;
+const maxFamousFigures = 10;
+const maxDenomination = 10;
+const maxCollection = 11;
+const maxPrinter = 5;
 
 
 async function loadData() {
@@ -180,8 +180,8 @@ async function runCode() {
         
     }
     
-    createRadarChart(bucketedData[2].allIndices, "#radarChartIntro")
-    createRadarChart(bucketedData[2].allIndices, "#radarChart")
+    // createRadarChart(bucketedData[2].allIndices, "#radarChartIntro")
+    // createRadarChart(bucketedData[2].allIndices, "#radarChart")
     createBucketChart(bucketedData);
     createParallelChart(bucketedData);
     showImages(bucketedData);
