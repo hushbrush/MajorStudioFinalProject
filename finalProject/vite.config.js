@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/finalProject/dist/', // Full path for GitHub Pages
+  base: '', // Full path for GitHub Pages
   build: {
-    outDir: '',
+    outDir: 'dist',
     rollupOptions: {
       external: [], // Ensure proper bundling
     },
