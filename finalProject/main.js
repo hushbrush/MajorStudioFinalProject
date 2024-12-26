@@ -982,6 +982,7 @@ function createParallelChart(data) {
 
 
 updateLines(selectedRanges);
+createDoubleRadarChart( selectedRanges, "#doubleRadar");
 //problem here: figure out selected ranges
 updateTextBlock(selectedRanges);
 // Add invisible anchor for each dimension's slider
