@@ -32,5 +32,5 @@ Final:
 
 
 
-link: https://hushbrush.github.io/MajorStudioFinalProject/finalProject/
+link: [https://hushbrush.github.io/MajorStudioFinalProject/finalProject/](https://hushbrush.github.io/MajorStudioFinalProject/)
 
