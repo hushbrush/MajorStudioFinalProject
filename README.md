@@ -31,6 +31,7 @@ Final:
 
 
 
+![2024 IIB Awards Badge_Longlist_Dark](https://github.com/user-attachments/assets/b2c66107-ff97-4ee6-b230-3c3eac743aa5)
 
 link: [https://hushbrush.github.io/MajorStudioFinalProject/finalProject/](https://hushbrush.github.io/MajorStudioFinalProject/)
 
