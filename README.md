@@ -10,6 +10,8 @@ Process:
 
 <img width="1720" alt="Screenshot 2024-12-03 at 2 29 48 PM" src="https://github.com/user-attachments/assets/43b95cb9-e445-45c1-9ec2-864c5914cc43">
 <img width="1722" alt="Screenshot 2024-12-05 at 11 07 55 PM" src="https://github.com/user-attachments/assets/61ad1f3d-c3e0-43ec-9f77-2c460ed3fb4a">
+<img width="1728" alt="Screenshot 2025-06-09 at 11 10 12 PM" src="https://github.com/user-attachments/assets/ebf81a30-b1a6-4f9d-9513-c970ae93f91e" />
+<img width="1728" alt="Screenshot 2025-06-09 at 3 11 03 PM" src="https://github.com/user-attachments/assets/ca7eed82-4182-4607-8403-181fd65b7c43" />
 
 
 
@@ -31,6 +33,7 @@ Final:
 
 
 
+![2024 IIB Awards Badge_Longlist_Dark](https://github.com/user-attachments/assets/b2c66107-ff97-4ee6-b230-3c3eac743aa5)
 
-link: https://hushbrush.github.io/MajorStudioFinalProject/finalProject/
+link: [https://hushbrush.github.io/MajorStudioFinalProject/finalProject/](https://hushbrush.github.io/MajorStudioFinalProject/)
 
