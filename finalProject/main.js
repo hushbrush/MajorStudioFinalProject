@@ -1109,7 +1109,7 @@ dimensions.forEach(dim => {
         .attr("y", -10) // Adjust y-position to align the image correctly
         .attr("width", 30) // Set the width of the image
         .attr("height", 30) // Set the height of the image
-        .attr("xlink:href", "finalProject/Assets/reset.svg")
+        .attr("xlink:href", "/Assets/reset.svg")
         .style("cursor", "pointer")
         .on("click", function () {
             console.log("Resetting range for", dim);
